@@ -27,7 +27,7 @@ def compile_ast(path: Path) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     argument_parser = argparse.ArgumentParser(prog="compiler.py")
     argument_parser.add_argument("--ast", action="store_true", help="print the parsed AST")
-    argument_parser.add_argument("input", type=Path, help="UTF-8 Mien source file")
+    argument_parser.add_argument("input", type=Path, help="UTF-8 FaceCard source file")
     args = argument_parser.parse_args(argv)
 
     if not args.ast:

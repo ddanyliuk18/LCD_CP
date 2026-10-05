@@ -1,4 +1,4 @@
-AI USAGE DISCLOSURE — MIEN STAGE 1
+AI USAGE DISCLOSURE — FACECARD STAGE 1
 
 Tool used
 ---------
@@ -29,7 +29,8 @@ repository and modified or created:
 
 What was taken as generated and what was changed
 ------------------------------------------------
-The original grammar draft and the language design (Mien, its keywords,
+The original grammar draft and the language design (originally named Mien,
+later renamed FaceCard; its keywords,
 kaomoji, types, operators, and completion form) were written by me and supplied
 to Codex. The implementation and documentation listed above were drafted by
 Codex from that design. Codex also revised the original grammar formatting and

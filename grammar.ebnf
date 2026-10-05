@@ -1,4 +1,4 @@
-(* Mien Stage 1 grammar. Terminals are quoted. *)
+(* FaceCard Stage 1 grammar. Terminals are quoted. *)
 
 program ::= { NL | statement }, finish, EOF ;
 

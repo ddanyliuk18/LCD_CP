@@ -1,6 +1,6 @@
-# Mien
+# FaceCard
 
-Mien is a small statically typed imperative language with kaomoji-inspired
+FaceCard is a small statically typed imperative language with kaomoji-inspired
 syntax. This repository contains Stage 1: a hand-written byte lexer, a
 recursive-descent parser, an AST hierarchy, and deterministic AST output.
 Semantic checking and LLVM code generation are intentionally deferred to later
@@ -19,7 +19,7 @@ expressions in Stage 1. The complete specification is in `grammar.ebnf`.
 The integer types are `i32` and `i64`; `flag` is the boolean type. `keep`
 declares an immutable binding and `change` declares a mutable one.
 
-```mien
+```facecard
 keep answer: i32 = 42
 change distance: i64 = 9000000000
 keep ready: flag = (✿◠‿◠)
@@ -27,7 +27,7 @@ keep ready: flag = (✿◠‿◠)
 
 Integer values use signed 32-bit or signed 64-bit ranges according to their
 declared type. Arithmetic overflow is a compilation error. These type and
-overflow rules are part of the Mien language design, but enforcing them belongs
+overflow rules are part of the FaceCard language design, but enforcing them belongs
 to the semantic checker in Stage 2; the Stage 1 parser only records the declared
 type and literal text in the AST.
 
@@ -36,7 +36,7 @@ type and literal text in the AST.
 Assignment uses `<-` and is syntactically available for an identifier. The
 future semantic checker rejects assignment to a `keep` binding.
 
-```mien
+```facecard
 change count: i32 = 1
 count <- count + 2 * 3
 ```
@@ -51,7 +51,7 @@ type-checked in Stage 1.
 `when` introduces a conditional. Its block must contain at least one statement;
 `otherwise` is optional and, when present, its block must also be non-empty.
 
-```mien
+```facecard
 when ಠ_ಠ (╥﹏╥)
 {
 keep result: i32 = 1
@@ -66,7 +66,7 @@ keep result: i32 = 0
 
 Every program ends with `(⊙_⊙;)` followed by an expression:
 
-```mien
+```facecard
 (⊙_⊙;)result
 ```
 
@@ -74,19 +74,19 @@ The diagnostic face `ಠ╭╮ಠ` is not part of the source grammar.
 
 ## Requirements and usage
 
-Mien Stage 1 requires Python 3.8 or newer and has no third-party dependencies.
+FaceCard Stage 1 requires Python 3.8 or newer and has no third-party dependencies.
 There is no build step.
 
 Run the compiler from the repository root:
 
 ```console
-python3 compiler.py --ast path/to/program.mien
+python3 compiler.py --ast path/to/program.face
 ```
 
 On Windows, when the Python Launcher is installed, the equivalent command is:
 
 ```console
-py -3 compiler.py --ast path\to\program.mien
+py -3 compiler.py --ast path\to\program.face
 ```
 
 Successful compilation writes only the stable, indented AST dump to stdout.
@@ -108,8 +108,8 @@ Run all golden tests with:
 python3 tests/run_tests.py
 ```
 
-The `tests/valid` directory contains `.mien` inputs paired with expected `.ast`
-dumps. `tests/invalid` contains invalid `.mien` inputs paired with the expected
+The `tests/valid` directory contains `.face` inputs paired with expected `.ast`
+dumps. `tests/invalid` contains invalid `.face` inputs paired with the expected
 single-line `.err` diagnostic. The runner checks exit codes, stdout/stderr
 separation, and exact normalized output, and reports every failing case.
 
