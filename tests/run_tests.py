@@ -17,7 +17,7 @@ def normalized(text: str) -> str:
 
 def run_group(directory: Path, expected_suffix: str, valid: bool) -> int:
     failures = 0
-    cases = sorted(directory.glob("*.face"))
+    cases = sorted(directory.glob("*.facecard"))
     for source in cases:
         expected_path = source.with_suffix(expected_suffix)
         completed = subprocess.run(
@@ -50,8 +50,8 @@ def run_group(directory: Path, expected_suffix: str, valid: bool) -> int:
 def main() -> int:
     failures = run_group(TESTS / "valid", ".ast", True)
     failures += run_group(TESTS / "invalid", ".err", False)
-    total = len(list((TESTS / "valid").glob("*.face")))
-    total += len(list((TESTS / "invalid").glob("*.face")))
+    total = len(list((TESTS / "valid").glob("*.facecard")))
+    total += len(list((TESTS / "invalid").glob("*.facecard")))
     if failures:
         print(f"{failures} of {total} tests failed")
         return 1

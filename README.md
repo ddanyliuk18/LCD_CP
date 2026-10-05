@@ -80,13 +80,13 @@ There is no build step.
 Run the compiler from the repository root:
 
 ```console
-python3 compiler.py --ast path/to/program.face
+python3 compiler.py --ast path/to/program.facecard
 ```
 
 On Windows, when the Python Launcher is installed, the equivalent command is:
 
 ```console
-py -3 compiler.py --ast path\to\program.face
+py -3 compiler.py --ast path\to\program.facecard
 ```
 
 Successful compilation writes only the stable, indented AST dump to stdout.
@@ -108,8 +108,8 @@ Run all golden tests with:
 python3 tests/run_tests.py
 ```
 
-The `tests/valid` directory contains `.face` inputs paired with expected `.ast`
-dumps. `tests/invalid` contains invalid `.face` inputs paired with the expected
+The `tests/valid` directory contains `.facecard` inputs paired with expected `.ast`
+dumps. `tests/invalid` contains invalid `.facecard` inputs paired with the expected
 single-line `.err` diagnostic. The runner checks exit codes, stdout/stderr
 separation, and exact normalized output, and reports every failing case.
 
