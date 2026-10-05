@@ -1,0 +1,17 @@
+Program @1:1
+  statements:
+    If @1:1 has_else=false
+      condition:
+        BooleanLiteral @1:6 value=true
+      then:
+        Block @2:1
+          If @3:1 has_else=false
+            condition:
+              BooleanLiteral @3:6 value=false
+            then:
+              Block @4:1
+                Declaration @5:1 name=x type=i64 mutable=true
+                  value:
+                    IntegerLiteral @5:17 value=0
+  result:
+    IntegerLiteral @8:11 value=0

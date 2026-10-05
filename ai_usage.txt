@@ -1,0 +1,56 @@
+AI USAGE DISCLOSURE — MIEN STAGE 1
+
+Tool used
+---------
+OpenAI Codex was used in an interactive coding session on 5 October 2026.
+The local Codex session does not expose a public shareable transcript URL, so
+there is no link I can truthfully provide. The complete user prompt supplied to
+the tool is reproduced below, and this file describes the resulting work in
+full. If a share link is later created in the client, add it here before
+submission.
+
+How AI was used
+---------------
+I asked Codex to review my initial grammar draft and the Stage 1 assignment,
+then begin implementing the project while respecting the grammar, tests,
+implementation restrictions, and commit requirements. Codex inspected the
+repository and modified or created:
+
+- grammar.ebnf: clarified whitespace, newline, UTF-8, identifier, reserved-word,
+  source-position, and Stage 2 semantic-check conventions;
+- lexer.py: hand-written byte scanner, positioned tokens, UTF-8 kaomoji
+  recognition, and lexical diagnostics;
+- ast_nodes.py: AST class hierarchy and stable indented dump;
+- parser.py: hand-written recursive-descent parser with peek/eat;
+- compiler.py: the --ast CLI and required error/output behavior;
+- tests/: valid and invalid golden cases plus a test runner;
+- README.md: language description, examples, usage, and test instructions;
+- ai_usage.txt: this disclosure.
+
+What was taken as generated and what was changed
+------------------------------------------------
+The original grammar draft and the language design (Mien, its keywords,
+kaomoji, types, operators, and completion form) were written by me and supplied
+to Codex. The implementation and documentation listed above were drafted by
+Codex from that design. Codex also revised the original grammar formatting and
+added explicit lexical conventions, but did not intentionally add language
+constructs. I reviewed the proposed design decisions during the session. Before
+submission I am responsible for reviewing every file, running the tests in a
+working Python environment, and recording any manual corrections below.
+
+Manual corrections after AI generation
+--------------------------------------
+None recorded yet. Update this section if any code, tests, grammar, or
+documentation is changed manually after this disclosure was generated.
+
+Prompt as sent
+--------------
+"переглянь опис першої стейдж проєкту та мій драфт ebnf, починай робити
+завдання якісно і обдумано та авжеж зважай на всі тести, вимоги по комітах та
+реалізації та тонкощі. Додаю опис мови та завдання"
+
+The same prompt then included the full Mien language summary and the full text
+of “Project Stage 1: language design, lexer and parser”, including Tasks 1–6,
+grading, testing, README, submission, branch, pull-request, and deadline rules.
+That assignment text is already preserved in the course handout; it is not
+repeated a second time here solely to keep this disclosure readable.

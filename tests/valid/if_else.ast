@@ -1,0 +1,21 @@
+Program @1:1
+  statements:
+    If @1:1 has_else=true
+      condition:
+        BinaryExpr @1:8 operator===
+          left:
+            IntegerLiteral @1:6 value=1
+          right:
+            IntegerLiteral @1:11 value=2
+      then:
+        Block @2:1
+          Declaration @3:1 name=x type=i32 mutable=false
+            value:
+              IntegerLiteral @3:15 value=1
+      else:
+        Block @6:1
+          Declaration @7:1 name=x type=i32 mutable=false
+            value:
+              IntegerLiteral @7:15 value=2
+  result:
+    IntegerLiteral @9:11 value=0
