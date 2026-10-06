@@ -100,6 +100,106 @@ compilation error: line L:C: message
 Columns are one-based byte offsets, matching the byte-oriented lexer. Thus a
 multi-byte UTF-8 kaomoji advances the column by its encoded byte length.
 
+## How Stage 1 works
+
+The compiler front end uses the following pipeline:
+
+```text
+.facecard source bytes
+        |
+        v
+hand-written lexer  ->  positioned tokens
+        |
+        v
+recursive-descent parser
+        |
+        v
+AST class hierarchy
+        |
+        v
+deterministic indented --ast output
+```
+
+`compiler.py` reads the input with `Path.read_bytes()`, passes those bytes to
+the lexer, passes the resulting token list to the parser, and prints the AST
+only after the complete input has parsed successfully. Consequently, a failed
+compilation never prints a partial tree.
+
+### Byte-level lexer
+
+`lexer.py` advances an explicit byte index, line, and column through the input.
+It classifies ASCII letters and digits directly, scans identifiers and integer
+literals with loops, recognizes punctuation with explicit transitions, and
+matches each kaomoji against its exact UTF-8 byte sequence. It does not use
+regular expressions, `split()`, generators, or an external lexer package.
+
+Every produced token stores four fields:
+
+```text
+kind    token category used by the parser
+text    source spelling (with CRLF normalized for NL)
+line    one-based physical source line
+column  one-based byte offset within that line
+```
+
+For example, `keep x: i32 = 42` produces keyword, identifier, colon, type,
+declaration-equals, integer, and newline tokens. Reserved words are recognized
+after scanning an ASCII word, so names such as `when` cannot be identifiers.
+LF produces one newline token; CRLF is normalized to the same token, while a
+bare CR is rejected. Invalid UTF-8 or any character outside the grammar causes
+a positioned lexical error.
+
+### Recursive-descent parser
+
+`parser.py` owns a token cursor. `peek()` inspects a token without consuming it,
+while `eat(kind)` consumes exactly the required kind or raises a positioned
+syntax error. There is a parsing method corresponding to each grammar rule,
+including program, statement, declaration, assignment, conditional, block,
+expression, comparison, additive, multiplicative, unary, and primary.
+
+Expression precedence follows the call hierarchy:
+
+```text
+comparison
+  -> additive          (+ and -)
+     -> multiplicative (*)
+        -> unary       (ಠ_ಠ)
+           -> primary  (literal or identifier)
+```
+
+The additive and multiplicative loops make their operators left-associative.
+Recursive unary parsing permits repeated negation. Comparison deliberately
+accepts at most one `==` or `!=`, exactly as specified by `grammar.ebnf`.
+Blocks are parsed structurally and must contain at least one statement.
+
+### AST hierarchy and stable dump
+
+`ast_nodes.py` separates statements from expressions through the `StmtNode`
+and `ExprNode` base classes. Concrete nodes represent declarations,
+assignments, conditionals, blocks, identifiers, integer and boolean literals,
+and unary and binary expressions. `ProgramNode` contains the top-level
+statements and the final completion expression.
+
+Every AST node records the source position of the token that introduced it.
+Nodes also retain the fields needed by later stages: declaration name, type and
+mutability; literal value; operator; operands; branches; and child statements.
+The dump function visits children in a fixed order and uses two spaces per
+depth, which makes `--ast` output deterministic and suitable for exact golden
+tests.
+
+### Diagnostics and Stage 1 boundary
+
+Lexical and parse failures carry a line, byte column, and message. The CLI
+catches these expected failures and emits exactly one diagnostic to stderr.
+Unexpected Python exceptions are not disguised as language diagnostics.
+
+Stage 1 checks only lexical and grammatical structure. It intentionally does
+not determine whether an identifier was declared, whether a `keep` binding is
+assigned, whether operands have compatible types, whether a `when` condition
+has type `flag`, or whether an integer operation overflows its declared type.
+Those checks require symbol and type information and belong to the Stage 2
+semantic pass. LLVM IR and executable generation belong to a later stage.
+
 ## Tests
 
 Run all golden tests with:
@@ -112,6 +212,11 @@ The `tests/valid` directory contains `.facecard` inputs paired with expected `.a
 dumps. `tests/invalid` contains invalid `.facecard` inputs paired with the expected
 single-line `.err` diagnostic. The runner checks exit codes, stdout/stderr
 separation, and exact normalized output, and reports every failing case.
+
+For valid cases, the runner requires exit code zero, empty stderr, and an exact
+AST match. For invalid cases, it requires a non-zero exit code, empty stdout,
+and an exact diagnostic match. This covers both behavior and the command-line
+output contract rather than merely checking whether the parser returned.
 
 ## Implementation layout
 
