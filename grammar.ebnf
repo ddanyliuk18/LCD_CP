@@ -1,0 +1,63 @@
+(* FaceCard Stage 1 grammar. Terminals are quoted. *)
+
+program ::= { NL | statement }, finish, EOF ;
+
+statement ::= declaration, NL
+            | assignment, NL
+            | if_statement ;
+
+declaration ::= mutability, identifier, ":", type, "=", expression ;
+
+mutability ::= "keep" | "change" ;
+
+type ::= "i32" | "i64" | "flag" ;
+
+assignment ::= identifier, "<-", expression ;
+
+if_statement ::= "when", expression, NL, block,
+                 [ "otherwise", NL, block ] ;
+
+block ::= "{", NL,
+          { NL }, statement, { NL | statement },
+          "}", NL ;
+
+finish ::= "(⊙_⊙;)", expression, [ NL ] ;
+
+expression ::= comparison ;
+
+comparison ::= additive, [ ( "==" | "!=" ), additive ] ;
+
+additive ::= multiplicative, { ( "+" | "-" ), multiplicative } ;
+
+multiplicative ::= unary, { "*", unary } ;
+
+unary ::= "ಠ_ಠ", unary | primary ;
+
+primary ::= integer_literal | boolean_literal | identifier ;
+
+boolean_literal ::= "(✿◠‿◠)" | "(╥﹏╥)" ;
+
+integer_literal ::= digit, { digit } ;
+
+identifier ::= letter, { letter | digit | "_" } ;
+
+letter ::= "A" | ... | "Z" | "a" | ... | "z" ;
+digit ::= "0" | "1" | "2" | "3" | "4"
+        | "5" | "6" | "7" | "8" | "9" ;
+
+NL ::= "\n" ;
+EOF ::= end of input ;
+
+(* Lexical conventions:
+   - Input is UTF-8. The lexer scans bytes and recognizes each non-ASCII
+     terminal above as its exact UTF-8 byte sequence.
+   - Space (U+0020) and horizontal tab (U+0009) are ignored between tokens.
+   - LF and CRLF both produce one NL token. A bare CR is a lexical error.
+   - Positions are one-based. Columns count bytes from the start of a line.
+   - Identifiers contain ASCII letters, digits and underscores only and must
+     start with a letter. keep, change, i32, i64, flag, when and otherwise are
+     reserved and cannot be identifiers.
+   - Comments and every other character or operator are outside the language.
+   - Integer range and expression type checks are semantic checks. They are
+     specified by the declared i32/i64/flag type and belong to Stage 2.
+*)

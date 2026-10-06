@@ -1,0 +1,9 @@
+when 1 == 2
+{
+keep x: i32 = 1
+}
+otherwise
+{
+keep x: i32 = 2
+}
+(⊙_⊙;)0

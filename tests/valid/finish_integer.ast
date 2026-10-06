@@ -1,0 +1,5 @@
+Program @1:1
+  statements:
+    <empty>
+  result:
+    IntegerLiteral @1:11 value=0

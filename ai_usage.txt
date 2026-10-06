@@ -1,0 +1,105 @@
+=== AI Usage — Project Stage 1 ===
+
+Track:
+Project Stage 1 — FaceCard language design, byte lexer, recursive-descent
+parser, AST hierarchy, tests and documentation
+
+Tool used:
+OpenAI Codex
+
+Prompt summary:
+The complete Stage 1 assignment, the initial FaceCard language description
+(originally named Mien), and a draft grammar.ebnf were provided. The AI was
+asked to inspect the repository, finish the grammar first, implement the AST
+hierarchy and parser in the required order, use a hand-written byte-level lexer
+without regular expressions, split() or generators, add the required valid and
+invalid tests, document the language, verify the result, and organize the work
+into focused Git commits. Follow-up prompts asked to rename the language to
+FaceCard, use the .facecard source extension, re-run regression checks, and
+explain how to verify the project on the Ubuntu course VM.
+
+AI contribution taken into the project:
+- reviewed the initial grammar draft, repository state, stage1 branch, and
+  commit history;
+- completed grammar.ebnf and documented UTF-8 input, ignored spaces and tabs,
+  LF and CRLF handling, byte-based source columns, reserved words, identifiers,
+  and the boundary between Stage 1 parsing and Stage 2 semantic checks;
+- implemented positioned Token objects and token kinds;
+- implemented a hand-written state-machine lexer over bytes without regular
+  expressions, split(), lexer generators, or Python token generators;
+- recognized the FaceCard kaomoji as exact UTF-8 byte sequences;
+- reported lexical errors with one-based line and byte-column positions;
+- normalized LF and CRLF into NL tokens while rejecting a lone carriage return;
+- added the ASTNode, ProgramNode, StmtNode, ExprNode, declaration, assignment,
+  conditional, block, literal, identifier, unary-expression, and
+  binary-expression node classes;
+- stored source positions and relevant node fields such as declared type,
+  mutability, identifier name, literal value, and operator;
+- implemented deterministic indented AST output;
+- implemented the recursive-descent parser with peek and eat helpers and a
+  parsing function for each grammar rule;
+- implemented declarations, assignments, arithmetic precedence, left
+  associativity, comparisons, boolean literals, recursive boolean negation,
+  non-empty when/otherwise blocks, nested conditionals, and mandatory program
+  completion;
+- implemented compiler.py --ast with AST output on stdout and single-line
+  lexical or syntax diagnostics on stderr with a non-zero exit status;
+- forced UTF-8 stdout and stderr so kaomoji output works on Windows systems
+  whose default console encoding is CP1251;
+- added 16 valid .facecard programs with exact .ast snapshots;
+- added 18 invalid .facecard programs with exact .err diagnostics;
+- added a dependency-free Python test runner that checks exit status,
+  stdout/stderr separation, and exact normalized output;
+- documented FaceCard syntax, examples, implementation layout, commands,
+  diagnostics, tests, and the Stage 2 type/overflow boundary in README.md;
+- renamed the language from Mien to FaceCard and changed the source extension
+  first to .face and then, after a follow-up request, to .facecard;
+- organized grammar, implementation, tests/documentation, language rename, and
+  extension rename into focused Git commits.
+
+Changes made after checking the AI output:
+- added the missing declaration-equals token after the first lexer/parser draft
+  incorrectly handled only the comparison == token;
+- corrected manually written AST snapshots whose columns after `(⊙_⊙;)` were
+  initially one byte too large;
+- corrected expected line numbers in the if/otherwise snapshot;
+- made both the compiler and test runner explicitly use UTF-8 output after an
+  Ubuntu-independent Windows test exposed a CP1251 UnicodeEncodeError;
+- updated the language name and every active file-extension reference after
+  choosing FaceCard and the final .facecard extension;
+- kept the original Mien name only in this disclosure where it accurately
+  describes the initial prompt and subsequent rename;
+- created and manually tested an example.facecard input on the Ubuntu VM;
+- confirmed that CRLF markers shown as ^M by cat -A are accepted by the lexer;
+- retained the repository's root-level `python3 compiler.py --ast FILE`
+  interface and did not add unnecessary third-party dependencies or a virtual
+  environment.
+
+Verification performed:
+- Python syntax compilation succeeded for compiler.py, lexer.py, parser.py,
+  ast_nodes.py, and tests/run_tests.py;
+- all 16 valid AST fixtures passed;
+- all 18 invalid lexical and syntax-error fixtures passed;
+- the complete runner reported `All 34 tests passed` in the Windows workspace;
+- after the FaceCard and .facecard renames, the complete 34-test regression
+  suite passed again;
+- every .facecard test input was checked to have its matching .ast or .err
+  expected-output file;
+- searches found no stale active .mien or .face source-extension references;
+- `git diff --check` passed;
+- the stage1 working tree was clean after the implementation commits;
+- on the Ubuntu course VM, the user ran `python3 tests/run_tests.py` and
+  reported `All 34 tests passed`;
+- on the Ubuntu VM, compiler.py produced the expected structured diagnostic
+  for an incomplete example program, confirming the CLI error path;
+- inspection of that diagnostic identified the missing mandatory `(⊙_⊙;)`
+  completion expression and the required correction was explained.
+
+Outcome:
+Project Stage 1 for FaceCard is implemented and verified. AI assistance was
+substantial and included grammar refinement, lexer/parser/AST implementation,
+test design, diagnostics, documentation, regression verification support, and
+Git workflow. The project intentionally does not include semantic checking,
+type and overflow enforcement, execution, or LLVM code generation because
+those belong to later project stages. This ai_usage.txt describes Project
+Stage 1 only.
