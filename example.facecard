@@ -1,3 +1,14 @@
-change counter: i32 = 10
+  change counter: i32 = 10
   keep step: i32 = 2
   keep ready: flag = (✿◠‿◠)
+  counter <- counter + step * 3
+
+  when ready
+  {
+  counter <- counter - 1
+  }
+  otherwise
+  {
+  counter <- 0
+  }
+  (⊙_⊙;)counter
