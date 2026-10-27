@@ -1,0 +1,11 @@
+serve factorial(n:i32) -> i32
+{
+change result:i32 = 1
+when n != 0
+{
+result <- n * factorial(n - 1)
+}
+retrocede result
+}
+Engrave(factorial(5))
+(⊙_⊙;)0

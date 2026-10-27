@@ -1,0 +1,71 @@
+Program @13:1
+  Card @1:1
+    name='Point'
+    fields:
+      Field @3:1
+        name='x'
+        type_name='i32'
+        mutable=True
+    members:
+      Function @4:1
+        name='d2'
+        parameters:
+        result_type='i32'
+        body:
+          Block @5:1
+            Return @6:1
+              value:
+                BinaryExpr @6:13 operator=*
+                  left:
+                    Identifier @6:11 name=x
+                  right:
+                    Identifier @6:15 name=x
+  Card @9:1
+    name='Circle'
+    fields:
+      Field @11:1
+        name='center'
+        type_name='Point'
+        mutable=True
+    members:
+  statements:
+    Declaration @13:1 name=p type=Point mutable=true
+      value:
+        ObjectInitializer @13:18
+          values:
+            IntegerLiteral @13:19 value=3
+    Declaration @14:1 name=c type=Circle mutable=true
+      value:
+        ObjectInitializer @14:19
+          values:
+            Identifier @14:20 name=p
+    Assignment @15:10
+      target:
+        FieldAccess @15:10
+          base:
+            FieldAccess @15:3
+              base:
+                Identifier @15:1 name=c
+              name='center'
+          name='x'
+      value:
+        IntegerLiteral @15:15 value=4
+    Engrave @16:1
+      value:
+        Call @16:18
+          member_call=true
+          name='d2'
+          arguments:
+          receiver:
+            FieldAccess @16:11
+              base:
+                Identifier @16:9 name=c
+              name='center'
+    Engrave @17:1
+      value:
+        Identifier @17:9 name=c
+    Engrave @18:1
+      value:
+        Identifier @18:9 name=p
+  result:
+    IntegerLiteral @19:11 value=0

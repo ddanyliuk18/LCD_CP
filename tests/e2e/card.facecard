@@ -1,0 +1,10 @@
+card Point
+{
+change x:i32
+keep y:i64
+}
+change p:Point = {3, 9000000000}
+p.x <- 5
+Engrave(p)
+Engrave(p.x)
+(⊙_⊙;)0

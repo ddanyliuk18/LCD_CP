@@ -1,0 +1,19 @@
+card Point
+{
+change x:i32
+serve d2() -> i32
+{
+retrocede x * x
+}
+}
+card Circle
+{
+change center:Point
+}
+change p:Point = {3}
+change c:Circle = {p}
+c.center.x <- 4
+Engrave(c.center.d2())
+Engrave(c)
+Engrave(p)
+(⊙_⊙;)0

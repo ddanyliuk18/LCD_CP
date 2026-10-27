@@ -1,0 +1,10 @@
+card P
+{
+keep x:i32
+serve f(n:i32) -> i32
+{
+retrocede n
+}
+}
+keep p:P = {1}
+(⊙_⊙;)p.f("bad")

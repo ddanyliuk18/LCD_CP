@@ -1,0 +1,20 @@
+card Box
+{
+change label:string
+keep ready:flag
+serve value() -> string
+{
+retrocede label
+}
+}
+serve copy(b:Box) -> Box
+{
+retrocede b
+}
+keep original:Box = {"original", (✿◠‿◠)}
+change duplicate:Box = copy(original)
+duplicate.label <- "copy"
+Engrave(original)
+Engrave(duplicate)
+Engrave(original.value())
+(⊙_⊙;)0
