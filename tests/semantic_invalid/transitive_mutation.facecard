@@ -1,0 +1,15 @@
+card P
+{
+change x:i32
+serve first() -> i32
+{
+retrocede second()
+}
+serve second() -> i32
+{
+x <- 2
+retrocede x
+}
+}
+keep p:P = {1}
+(⊙_⊙;)p.first()

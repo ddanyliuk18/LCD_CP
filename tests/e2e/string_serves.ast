@@ -1,0 +1,89 @@
+Program @18:1
+  Card @1:1
+    name='Label'
+    fields:
+      Field @3:1
+        name='text'
+        type_name='string'
+        mutable=True
+    members:
+      Function @4:1
+        name='replace'
+        parameters:
+          Parameter @4:15
+            name='value'
+            type_name='string'
+        result_type='string'
+        body:
+          Block @5:1
+            Assignment @6:1 name=text
+              value:
+                Identifier @6:9 name=value
+            Return @7:1
+              value:
+                Identifier @7:11 name=text
+      Function @9:1
+        name='get'
+        parameters:
+        result_type='string'
+        body:
+          Block @10:1
+            Return @11:1
+              value:
+                Identifier @11:11 name=text
+  Function @14:1
+    name='echo'
+    parameters:
+      Parameter @14:12
+        name='value'
+        type_name='string'
+    result_type='string'
+    body:
+      Block @15:1
+        Return @16:1
+          value:
+            Identifier @16:11 name=value
+  statements:
+    Declaration @18:1 name=l type=Label mutable=true
+      value:
+        ObjectInitializer @18:18
+          values:
+            StringLiteral @18:19
+              value='old'
+    Assignment @19:3
+      target:
+        FieldAccess @19:3
+          base:
+            Identifier @19:1 name=l
+          name='text'
+      value:
+        Call @19:11
+          member_call=false
+          name='echo'
+          arguments:
+            StringLiteral @19:16
+              value='new'
+          receiver=None
+    Engrave @20:1
+      value:
+        Call @20:11
+          member_call=true
+          name='get'
+          arguments:
+          receiver:
+            Identifier @20:9 name=l
+    Engrave @21:1
+      value:
+        Call @21:11
+          member_call=true
+          name='replace'
+          arguments:
+            StringLiteral @21:19
+              value='100% ready'
+          receiver:
+            Identifier @21:9 name=l
+    Engrave @22:1
+      value:
+        Identifier @22:9 name=l
+  result:
+    IntegerLiteral @23:11 value=0

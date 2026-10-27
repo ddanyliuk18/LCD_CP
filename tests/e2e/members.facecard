@@ -1,0 +1,18 @@
+card Counter
+{
+change value:i32
+serve increase(n:i32) -> i32
+{
+value <- value + n
+retrocede value
+}
+serve twice(n:i32) -> i32
+{
+keep first:i32 = increase(n)
+retrocede increase(n)
+}
+}
+change c:Counter = {1}
+Engrave(c.twice(2))
+Engrave(c)
+(⊙_⊙;)0

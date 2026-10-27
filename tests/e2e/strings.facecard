@@ -1,0 +1,6 @@
+keep greeting: string = "Привіт"
+change text: string = greeting
+text <- "line\n\t\"quoted\"\\done"
+Engrave(greeting)
+Engrave(text)
+(⊙_⊙;)0

@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field, fields
+from typing import List, Optional, Union
 
 
 @dataclass
@@ -56,7 +56,7 @@ class DeclarationNode(StmtNode):
 
 @dataclass
 class AssignmentNode(StmtNode):
-    name: str
+    name: Union[str, ExprNode]
     value: ExprNode
 
 
@@ -76,6 +76,67 @@ class IfNode(StmtNode):
 class ProgramNode(ASTNode):
     statements: List[StmtNode]
     result: ExprNode
+    cards: list = field(default_factory=list)
+    functions: list = field(default_factory=list)
+
+
+@dataclass
+class StringLiteralNode(ExprNode):
+    value: str
+
+
+@dataclass
+class FieldAccessNode(ExprNode):
+    base: ExprNode
+    name: str
+
+
+@dataclass
+class CallNode(ExprNode):
+    name: str
+    arguments: list
+    receiver: Optional[ExprNode] = None
+
+
+@dataclass
+class ObjectInitializerNode(ExprNode):
+    values: list
+
+
+@dataclass
+class EngraveNode(StmtNode):
+    value: ExprNode
+
+
+@dataclass
+class ReturnNode(StmtNode):
+    value: ExprNode
+
+
+@dataclass
+class ParameterNode(ASTNode):
+    name: str
+    type_name: str
+
+
+@dataclass
+class FieldNode(ParameterNode):
+    mutable: bool
+
+
+@dataclass
+class FunctionNode(ASTNode):
+    name: str
+    parameters: list
+    result_type: str
+    body: BlockNode
+
+
+@dataclass
+class CardNode(ASTNode):
+    name: str
+    fields: list
+    members: list
 
 
 def dump_ast(node: ASTNode) -> str:
@@ -88,6 +149,8 @@ def dump_ast(node: ASTNode) -> str:
         pos = f"@{current.line}:{current.column}"
         if isinstance(current, ProgramNode):
             emit(depth, f"Program {pos}")
+            for declaration in current.cards + current.functions:
+                visit(declaration, depth + 1)
             emit(depth + 1, "statements:")
             if current.statements:
                 for statement in current.statements:
@@ -102,7 +165,12 @@ def dump_ast(node: ASTNode) -> str:
             emit(depth + 1, "value:")
             visit(current.value, depth + 2)
         elif isinstance(current, AssignmentNode):
-            emit(depth, f"Assignment {pos} name={current.name}")
+            if isinstance(current.name, ASTNode):
+                emit(depth, f"Assignment {pos}")
+                emit(depth + 1, 'target:')
+                visit(current.name, depth + 2)
+            else:
+                emit(depth, f"Assignment {pos} name={current.name}")
             emit(depth + 1, "value:")
             visit(current.value, depth + 2)
         elif isinstance(current, IfNode):
@@ -137,7 +205,22 @@ def dump_ast(node: ASTNode) -> str:
         elif isinstance(current, IdentifierNode):
             emit(depth, f"Identifier {pos} name={current.name}")
         else:
-            raise TypeError(f"unsupported AST node: {type(current).__name__}")
+            emit(depth, f"{type(current).__name__.removesuffix('Node')} {pos}")
+            if isinstance(current, CallNode):
+                emit(depth + 1, f"member_call={str(current.receiver is not None).lower()}")
+            for item in fields(current):
+                if item.name in ('line', 'column'):
+                    continue
+                value = getattr(current, item.name)
+                if isinstance(value, ASTNode):
+                    emit(depth + 1, item.name + ':')
+                    visit(value, depth + 2)
+                elif isinstance(value, list):
+                    emit(depth + 1, item.name + ':')
+                    for child in value:
+                        visit(child, depth + 2)
+                else:
+                    emit(depth + 1, f'{item.name}={value!r}')
 
     visit(node, 0)
     return "\n".join(lines)

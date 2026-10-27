@@ -1,0 +1,9 @@
+card P
+{
+keep x:i32
+serve text() -> string
+{
+retrocede x
+}
+}
+(⊙_⊙;)0

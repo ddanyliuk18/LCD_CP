@@ -1,0 +1,6 @@
+card P
+{
+keep x:i32
+change x:i32
+}
+(⊙_⊙;)0
