@@ -1,0 +1,12 @@
+Program @1:1
+  statements:
+    If @1:1 has_else=false
+      condition:
+        BooleanLiteral @1:6 value=true
+      then:
+        Block @2:1
+          Declaration @3:1 name=x type=i32 mutable=false
+            value:
+              IntegerLiteral @3:15 value=1
+  result:
+    IntegerLiteral @5:11 value=0

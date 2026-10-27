@@ -1,0 +1,9 @@
+Program @1:1
+  statements:
+    <empty>
+  result:
+    BinaryExpr @1:13 operator===
+      left:
+        IntegerLiteral @1:11 value=1
+      right:
+        IntegerLiteral @1:16 value=1

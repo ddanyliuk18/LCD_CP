@@ -1,0 +1,7 @@
+Program @2:2
+  statements:
+    Declaration @2:2 name=x type=i32 mutable=false
+      value:
+        IntegerLiteral @2:16 value=7
+  result:
+    Identifier @4:11 name=x

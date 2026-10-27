@@ -1,0 +1,9 @@
+Program @1:1
+  statements:
+    <empty>
+  result:
+    UnaryExpr @1:11 operator=ಠ_ಠ
+      operand:
+        UnaryExpr @1:19 operator=ಠ_ಠ
+          operand:
+            BooleanLiteral @1:27 value=true
