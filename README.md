@@ -1,228 +1,216 @@
-# FaceCard
+# FaceCard — Stage 2
 
-FaceCard is a small statically typed imperative language with kaomoji-inspired
-syntax. This repository contains Stage 1: a hand-written byte lexer, a
-recursive-descent parser, an AST hierarchy, and deterministic AST output.
-Semantic checking and LLVM code generation are intentionally deferred to later
-stages.
+FaceCard preserves the Stage 1 kaomoji syntax and adds LLVM generation, cards,
+serves, input/output and first-class strings. `grammar.ebnf` specifies syntax.
+The handwritten lexer scans bytes; columns are one-based UTF-8 byte offsets.
+LF/CRLF are accepted. Identifiers begin with an ASCII letter and continue with
+letters, digits or underscores. Keywords are reserved and case-sensitive.
+There are no comments, grouping parentheses, unary numeric minus or loops.
 
-## Language overview
+## Install and run
 
-A program contains zero or more statements and ends with exactly one completion
-expression. Statements are line-oriented. Spaces and tabs may separate tokens;
-LF and CRLF line endings are accepted. Identifiers use ASCII letters, digits,
-and `_`, and must start with a letter. There are no comments or parenthesized
-expressions in Stage 1. The complete specification is in `grammar.ebnf`.
+Requires Python 3.10+, llvmlite and clang (Ubuntu/WSL: install prerequisites
+with `sudo apt install python3-venv clang`). From the repository root:
 
-### Types and declarations
-
-The integer types are `i32` and `i64`; `flag` is the boolean type. `keep`
-declares an immutable binding and `change` declares a mutable one.
-
-```facecard
-keep answer: i32 = 42
-change distance: i64 = 9000000000
-keep ready: flag = (✿◠‿◠)
-```
-
-Integer values use signed 32-bit or signed 64-bit ranges according to their
-declared type. Arithmetic overflow is a compilation error. These type and
-overflow rules are part of the FaceCard language design, but enforcing them belongs
-to the semantic checker in Stage 2; the Stage 1 parser only records the declared
-type and literal text in the AST.
-
-### Assignment and expressions
-
-Assignment uses `<-` and is syntactically available for an identifier. The
-future semantic checker rejects assignment to a `keep` binding.
-
-```facecard
-change count: i32 = 1
-count <- count + 2 * 3
-```
-
-`*` binds more tightly than `+` and `-`; arithmetic operators associate to the
-left. A comparison expression may contain one `==` or `!=`. Operands are not
-type-checked in Stage 1.
-
-### Booleans and conditionals
-
-`(✿◠‿◠)` means true, `(╥﹏╥)` means false, and `ಠ_ಠ` is boolean negation.
-`when` introduces a conditional. Its block must contain at least one statement;
-`otherwise` is optional and, when present, its block must also be non-empty.
-
-```facecard
-when ಠ_ಠ (╥﹏╥)
-{
-keep result: i32 = 1
-}
-otherwise
-{
-keep result: i32 = 0
-}
-```
-
-### Program completion
-
-Every program ends with `(⊙_⊙;)` followed by an expression:
-
-```facecard
-(⊙_⊙;)result
-```
-
-The diagnostic face `ಠ╭╮ಠ` is not part of the source grammar.
-
-## Requirements and usage
-
-FaceCard Stage 1 requires Python 3.8 or newer and has no third-party dependencies.
-There is no build step.
-
-Run the compiler from the repository root:
-
-```console
-python3 compiler.py --ast path/to/program.facecard
-```
-
-On Windows, when the Python Launcher is installed, the equivalent command is:
-
-```console
-py -3 compiler.py --ast path\to\program.facecard
-```
-
-Successful compilation writes only the stable, indented AST dump to stdout.
-Lexical and syntax failures write one line in the following form to stderr,
-produce no stdout, and return a non-zero exit code:
-
-```text
-compilation error: line L:C: message
-```
-
-Columns are one-based byte offsets, matching the byte-oriented lexer. Thus a
-multi-byte UTF-8 kaomoji advances the column by its encoded byte length.
-
-## How Stage 1 works
-
-The compiler front end uses the following pipeline:
-
-```text
-.facecard source bytes
-        |
-        v
-hand-written lexer  ->  positioned tokens
-        |
-        v
-recursive-descent parser
-        |
-        v
-AST class hierarchy
-        |
-        v
-deterministic indented --ast output
-```
-
-`compiler.py` reads the input with `Path.read_bytes()`, passes those bytes to
-the lexer, passes the resulting token list to the parser, and prints the AST
-only after the complete input has parsed successfully. Consequently, a failed
-compilation never prints a partial tree.
-
-### Byte-level lexer
-
-`lexer.py` advances an explicit byte index, line, and column through the input.
-It classifies ASCII letters and digits directly, scans identifiers and integer
-literals with loops, recognizes punctuation with explicit transitions, and
-matches each kaomoji against its exact UTF-8 byte sequence. It does not use
-regular expressions, `split()`, generators, or an external lexer package.
-
-Every produced token stores four fields:
-
-```text
-kind    token category used by the parser
-text    source spelling (with CRLF normalized for NL)
-line    one-based physical source line
-column  one-based byte offset within that line
-```
-
-For example, `keep x: i32 = 42` produces keyword, identifier, colon, type,
-declaration-equals, integer, and newline tokens. Reserved words are recognized
-after scanning an ASCII word, so names such as `when` cannot be identifiers.
-LF produces one newline token; CRLF is normalized to the same token, while a
-bare CR is rejected. Invalid UTF-8 or any character outside the grammar causes
-a positioned lexical error.
-
-### Recursive-descent parser
-
-`parser.py` owns a token cursor. `peek()` inspects a token without consuming it,
-while `eat(kind)` consumes exactly the required kind or raises a positioned
-syntax error. There is a parsing method corresponding to each grammar rule,
-including program, statement, declaration, assignment, conditional, block,
-expression, comparison, additive, multiplicative, unary, and primary.
-
-Expression precedence follows the call hierarchy:
-
-```text
-comparison
-  -> additive          (+ and -)
-     -> multiplicative (*)
-        -> unary       (ಠ_ಠ)
-           -> primary  (literal or identifier)
-```
-
-The additive and multiplicative loops make their operators left-associative.
-Recursive unary parsing permits repeated negation. Comparison deliberately
-accepts at most one `==` or `!=`, exactly as specified by `grammar.ebnf`.
-Blocks are parsed structurally and must contain at least one statement.
-
-### AST hierarchy and stable dump
-
-`ast_nodes.py` separates statements from expressions through the `StmtNode`
-and `ExprNode` base classes. Concrete nodes represent declarations,
-assignments, conditionals, blocks, identifiers, integer and boolean literals,
-and unary and binary expressions. `ProgramNode` contains the top-level
-statements and the final completion expression.
-
-Every AST node records the source position of the token that introduced it.
-Nodes also retain the fields needed by later stages: declaration name, type and
-mutability; literal value; operator; operands; branches; and child statements.
-The dump function visits children in a fixed order and uses two spaces per
-depth, which makes `--ast` output deterministic and suitable for exact golden
-tests.
-
-### Diagnostics and Stage 1 boundary
-
-Lexical and parse failures carry a line, byte column, and message. The CLI
-catches these expected failures and emits exactly one diagnostic to stderr.
-Unexpected Python exceptions are not disguised as language diagnostics.
-
-Stage 1 checks only lexical and grammatical structure. It intentionally does
-not determine whether an identifier was declared, whether a `keep` binding is
-assigned, whether operands have compatible types, whether a `when` condition
-has type `flag`, or whether an integer operation overflows its declared type.
-Those checks require symbol and type information and belong to the Stage 2
-semantic pass. LLVM IR and executable generation belong to a later stage.
-
-## Tests
-
-Run all golden tests with:
-
-```console
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r requirements.txt
+python3 compiler.py --ast example.facecard
+python3 compiler.py tests/e2e/read.facecard program.ll
+clang program.ll -o program
+./program < tests/e2e/read.in
 python3 tests/run_tests.py
 ```
 
-The `tests/valid` directory contains `.facecard` inputs paired with expected `.ast`
-dumps. `tests/invalid` contains invalid `.facecard` inputs paired with the expected
-single-line `.err` diagnostic. The runner checks exit codes, stdout/stderr
-separation, and exact normalized output, and reports every failing case.
+Windows users can use WSL or a working native Python and clang installation.
+Set `CLANG` to the executable when clang is outside PATH.
+`--ast` parses without semantic checking and preserves Stage 1 golden dumps.
+Compilation runs a separate semantic pass before generating LLVM. Its only IR
+output is `str(module)` built using `llvmlite.ir`, never assembled IR strings.
+Lexical, syntax and semantic errors produce one stderr line, no stdout, nonzero
+status and no output file: `compilation error: line L:C: message`.
 
-For valid cases, the runner requires exit code zero, empty stderr, and an exact
-AST match. For invalid cases, it requires a non-zero exit code, empty stdout,
-and an exact diagnostic match. This covers both behavior and the command-line
-output contract rather than merely checking whether the parser returned.
+## Bindings and integers
 
-## Implementation layout
+Declare variables before use. Each scope permits one declaration per variable
+name; blocks create scopes and may shadow outer variables. `keep` is immutable,
+`change` mutable. Parameters are immutable and share the serve body's initial
+scope with locals. Duplicate cards, serves, fields and parameters are rejected.
+Fields and members cannot share a name. Card and serve names are collected
+before bodies, permitting forward type/function references.
 
-- `lexer.py` — byte-level state-machine lexer and positioned tokens;
-- `ast_nodes.py` — AST class hierarchy and deterministic dump;
-- `parser.py` — recursive-descent parser with `peek` and `eat`;
-- `compiler.py` — Stage 1 `--ast` command-line interface;
-- `grammar.ebnf` — authoritative syntax and lexical conventions;
-- `tests/run_tests.py` — dependency-free golden-test runner.
+```facecard
+keep answer:i32 = 42
+change distance:i64 = 9000000000
+distance <- distance + answer
+```
+
+Integer literals choose the smallest fitting signed type, i32 then i64.
+Literals above 9223372036854775807 are rejected. Negative values can be computed
+by subtraction. `+`, `-`, `*` accept integers only; multiplication binds tighter,
+and arithmetic associates left. Two i32 operands produce i32; an i64 operand
+widens the other by signed extension and produces i64. Assignment, arguments,
+field initialization and results allow i32-to-i64 widening, never narrowing.
+Other types require an exact match; flag is not an integer.
+Overflow in arithmetic composed entirely of literals is a compilation error. Runtime arithmetic uses
+LLVM signed overflow intrinsics and calls abort on overflow (nonzero execution
+status), never silent wrapping. Widening the result does not widen operands:
+`2147483647 + 1` overflows i32 even in an i64 declaration.
+
+## Flags, branches and completion
+
+`==`/`!=` accept two integers (with widening) or two flags, returning flag.
+Comparisons do not chain. `ಠ_ಠ` accepts flag only. `when` requires flag;
+its block and optional `otherwise` block must each contain at least one
+statement. Statements require newlines.
+
+```facecard
+change ready:flag = (✿◠‿◠)
+when ಠ_ಠ (╥﹏╥)
+{
+Engrave(ready)
+}
+otherwise
+{
+Engrave((╥﹏╥))
+}
+(⊙_⊙;)0
+```
+
+Exactly one top-level `(⊙_⊙;) expression` finishes the program: it evaluates
+its expression without printing and main returns zero. It cannot appear in
+blocks or serves. Serves return with `retrocede`.
+
+## Serves
+
+A serve declares typed immutable parameters and a result type. Its body must
+end with `retrocede expression` compatible with that type; no early return is
+added. Calls are expressions, accept exactly the declared number of compatible
+arguments, and can be arguments themselves. Global serves see parameters,
+locals, card types and all global serves, including themselves and serves
+below them. They cannot see top-level variables.
+
+```facecard
+serve add(a:i32, b:i32) -> i32
+{
+retrocede a + b
+}
+Engrave(add(add(1, 2), 3))
+```
+
+## Cards and member serves
+
+A card has at least one typed field; all fields precede member serves.
+An initializer supplies every field in declaration order with compatible types.
+Cards have value semantics: initialization, assignment, parameters and results
+copy the object and its nested cards. Recursive by-value layouts are rejected.
+
+```facecard
+card Point
+{
+change x:i32
+keep y:i32
+serve d2() -> i32
+{
+retrocede x * x + y * y
+}
+serve move(delta:i32) -> i32
+{
+x <- x + delta
+retrocede x
+}
+}
+change p:Point = {3, 4}
+p.x <- 5
+Engrave(p.d2())
+```
+
+Field access uses dot chains (`c.center.x`); a chain may end with a member call
+(`c.center.d2()`). A write requires a mutable base and every field link,
+including the last field. A mutable copy of a constant object can change its
+mutable fields without changing the original.
+Inside a member, variable lookup searches parameters/locals, then current-card
+fields. Top-level variables are inaccessible. Unqualified calls search current
+members before global serves. Explicit receivers resolve only their members.
+Members receive the object's address as a hidden parameter.
+A member is mutating when it assigns its object's fields (also nested fields)
+or calls another mutating member on that object or its fields. This propagates
+to a fixed point through forward calls and cycles. Mutating calls require a
+mutable receiver at every chain link; nonmutating calls can use constant
+objects. Mutating an independent local copy does not mark the member mutating.
+
+## Input/output
+
+`draw()` is a reserved expression consuming one signed i32 from stdin via
+scanf. Valid input is a decimal integer in range; missing/malformed/out-of-i32
+input terminates at runtime. Input is not echoed. `Engrave(expression)` is a
+statement, has no value and appends exactly one newline.
+
+```facecard
+keep n:i32 = draw()
+Engrave(n)
+Engrave(9000000000)
+Engrave((✿◠‿◠))
+Engrave("hello")
+```
+
+Print uses `%d` for i32, `%lld` for i64, true/false for flag and `%s` for string.
+Cards print recursively as `Type{field=value, field=value}` in declaration
+order, e.g. `Circle{center=Point{x=4}}`. String fields print their decoded raw
+contents without quotes/escaping: `Label{text=hello}`. Embedded newlines remain
+newlines. Recursive traversal adds no newline; Engrave adds the final one.
+User text is always a `%s` argument, never a printf format string.
+
+## Extra: first-class string
+
+**First-class string is a FaceCard extension beyond the Stage 2 requirements**,
+which require only printing string literals. FaceCard additionally permits
+string keep/change bindings, assignment, card fields, serve/member parameters
+and results. Compatibility is strictly string-to-string. Arithmetic,
+concatenation, negation and ==/!= comparisons on strings are rejected.
+
+```facecard
+serve echo(value:string) -> string
+{
+retrocede value
+}
+change text:string = "hello"
+text <- echo("line\n\t\"quoted\"\\end")
+Engrave(text)
+```
+
+Strings accept UTF-8 and exactly four escapes: `\n`, `\t`, `\"`, `\\`.
+Literal newlines, NUL, invalid UTF-8 and unknown escapes are rejected.
+Values are pointers to immutable null-terminated global UTF-8 constants;
+assignment copies a pointer. No dynamic allocation or garbage collection.
+
+## Implementation and tests
+
+`lexer.py` scans bytes; `parser.py` implements recursive-descent grammar rules;
+`ast_nodes.py` stores positions/fields and stable dumps. `semantics.py` resolves
+declarations, checks types, chains and mutation effects before LLVM generation.
+`codegen.py` consumes resolved symbols and field indexes. It creates identified
+struct types and index-based GEPs, declares every serve before bodies, prefixes
+global symbols with `fc.serve.` and members with `fc.member.Card.`. Each member
+has a hidden object pointer. printf/scanf are external typed declarations;
+format strings are global constants. API reference:
+https://llvmlite.pydata.org/en/latest/user-guide/ir/ir-builder.html
+
+The original 16 valid AST and 18 invalid diagnostic tests are retained.
+`tests/e2e` contains 13 exact-output programs and two runtime-overflow checks.
+It compiles LLVM, builds with clang and compares exact stdout bytes
+with `.expected`. Optional `.in` supplies stdin, without echo; `.status` marks
+a runtime-failure case. `tests/semantic_invalid` contains 43 negative programs and checks exact `.err`, nonzero
+status, empty stdout and absence of an output file. Temporary directories hold
+all generated artifacts. The runner continues and reports each failing case.
+See `tests/coverage.md` for positive/negative coverage of semantic rules.
+
+## Submission
+
+Stage 1 is merged into main. Work stays on stage2 with separate commits for
+frontend, semantics/backend, tests and documentation. Open stage2 into main,
+request vovaskochko with GitHub's reviewer control and leave it unmerged.
+Submit the PR link and ai_usage_2.txt in Moodle. AI-written explanations must
+not be presented as the student's own words; understanding testimony must come
+from the student.

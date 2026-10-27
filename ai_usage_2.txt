@@ -1,0 +1,362 @@
+AI usage disclosure — FaceCard Project Stage 2
+
+1. Tools I used
+I used OpenAI Codex (a GPT-6-based coding assistant) in my repository. Through
+Codex I used apply_patch, PowerShell/exec_command, WSL, Git, Python 3.12,
+llvmlite 0.47 and clang 18 for implementation and verification, GitHub CLI for
+submission preparation, and web search for official llvmlite documentation.
+I did not use delegated AI agents. I did not copy another student's compiler.
+
+2. My exact prompts
+The following numbered entries are copied verbatim from this conversation's
+local transcript, rather than summarized. This includes my Stage 1 feedback,
+the assignment text, the detailed FaceCard instruction and later clarifications.
+The environment context is included as recorded. I embedded the text directly
+so no login or external chat link is required to read my prompts.
+
+--- Verbatim user message 1 ---
+
+<environment_context>
+  <cwd>D:\LCD\LCD_CP</cwd>
+  <shell>powershell</shell>
+  <current_date>2026-10-27</current_date>
+  <timezone>Europe/Kiev</timezone>
+  <filesystem><workspace_roots><root>D:\LCD\LCD_CP</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>D:\LCD\LCD_CP</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>D:\LCD\LCD_CP\.git</path></entry><entry access="read"><path>D:\LCD\LCD_CP\.agents</path></entry><entry access="read"><path>D:\LCD\LCD_CP\.codex</path></entry><entry access="read"><path>D:\LCD\LCD_CP\.aws</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+--- Verbatim user message 2 ---
+
+переглянь фідбек на попередню стейджу Project Stage 1 — feedback
+
+Submission format & code style — 1.5/2: clean modular code and a complete submission, but no reviewer was requested on the PR (-0.5).
+Language Design — 3.5/4: kaomoji literals and operators, keep/change, <- and when/otherwise make a distinct language, and the EBNF is complete. The overflow rules are only declared, not checked in any form (-0.5).
+Lexer & Syntax Parser — 5/5: a byte-level lexer with exact UTF-8 kaomoji matching, recursive descent with a function per rule, an AST hierarchy and a stable dump with fields and positions.
+Test cases — 3/3: 16 + 18, the runner checks exit codes and streams, all green.
+README.md — 1/1
+Total: 14/15  і також переглянь умову завдання та виконай його акуратно, вичерпно - зважаючи на всі детал і та вимоги по комітам також я оновлю в файлі ebnf а також правила синтаксису Project Stage 2: code generation, functions & structures
+Languages and Compilers Design · Course project, stage 2 of 3 · deadline 27 October 2026, 23:59 (Kyiv time)
+Complete the second stage of the course project: make your language run. Extend it with functions, structures with
+fields and member functions, and two built-ins for input and output, and generate LLVM IR for every construct of
+Stage 1 and Stage 2. The compiled programs are checked by running them: a test passes when the program prints
+what you recorded.
+Grading (15 points total)
+Submission format and code style 2 pt
+Language design: EBNF and README 3 pt
+Front end: lexer and parser 2 pt
+Semantic analysis and code generation through the builder 5 pt
+Test cases 3 pt
+ai_usage_2.txt is required: a missing or incomplete file is a grade of 0 for the stage. IR assembled from strings instead of
+the builder gets 0 for Task 3. Late submission is 0.
+AI USAGE DISCLOSURE (REQUIRED)
+Include ai_usage_2.txt in the pull request and attach it to the Moodle submission. A complete file contains:
+• the tools you used, with their names;
+• the prompts as you sent them, or links to the full chat transcripts that open without a login;
+• for each part of the work: what you took as it was, what you changed and why;
+• what you understood: a few sentences in your own words about the code you did not write yourself.
+If you did not use AI, write so in the file. A file that is missing, holds only links, does not say what was taken and
+what was changed, leaves a part of the work undisclosed, or contains TODO placeholders is incomplete, and the
+stage is graded 0.
+WHERE THE WORK LIVES
+The same repository as Stage 1, on a new branch stage2. You may reuse code from your own practice solutions,
+but the language stays yours: the syntax of your Stage 1 language is kept and extended. Every Stage 1 program that
+was valid is still valid.
+The compiler keeps --ast and gains code generation:
+• python3 compiler.py input.txt output.ll (or your C++ binary with the same arguments) writes the
+module the builder printed to output.ll;
+• python3 compiler.py --ast input.txt prints the AST;
+• any error — lexical, syntax or semantic — is one line on stderr, compilation error: line L:C: message,
+a non-zero exit code and no output file. A Python traceback or a crash is never an error report.
+TASK 1 — EXTEND THE LANGUAGE (3 POINTS)
+Add to your language, in your own syntax:
+• Functions: a declaration with typed parameters and a result type, a body, and a way to leave the function with
+a value. A call is an expression; its arguments are expressions, and a call may be an argument of another call. A
+function may call itself and any function declared below it.
+• Structures with fields: a named type with typed fields, each constant or mutable; an object created with a
+value for every field; field access by name, also through a chain (c.center.x or its equivalent in your syntax);
+assignment to a field only through a chain that is mutable at every step.
+• Member functions: declared inside a structure; in the body, the fields and the other member functions of the
+structure are visible by name; called on an object. A member function that assigns a field may be called only on
+a mutable object.
+• read and print: read reads one integer from standard input; print prints an integer, a bool, a string literal,
+or an object as its type and its fields.
+Update grammar.ebnf: every new construct is in the grammar, with its lexical rules. Update README.md: one
+short example per feature, and the rules your semantic pass enforces — the types of arguments and results, what a
+1
+function body can see, how a name is looked up inside a member function when a parameter, a field and a global
+share it, how an object is printed, and where print puts a newline.
+Write the rule before the syntax. “A member function sees the fields” is a sentence; “inside a member function
+a name is looked up among the parameters and locals, then the fields, then the globals” is a rule that a semantic
+pass implements and a test can break. Each rule in the README is covered by one program that follows it and
+one that breaks it.
+TASK 2 — THE FRONT END (2 POINTS)
+Extend the lexer and the recursive-descent parser for every construct of Task 1. The lexer stays a hand-written state
+machine; the parser stays one function per grammar rule. --ast prints the new nodes with their fields and flags:
+parameter and result types, the mutability of fields, the arguments of a call, whether a chain ends in a member call.
+Every syntax error is reported with the line:column of the token that broke the rule.
+TASK 3 — SEMANTIC ANALYSIS AND CODE GENERATION (5 POINTS)
+Semantic analysis
+A separate pass over the AST, before code generation, with a symbol table for variables, functions (parameter types,
+result type), and structures (fields in order with their index, type and mutability; member functions with their
+signatures and whether they assign a field). It checks the Stage 1 rules — declaration before use, one declaration
+per scope, mutability, types, the overflow checks your README describes — and the new ones: the number and
+the types of arguments, the type of the value a function leaves with, field existence, the mutability of chains, the
+call of a mutating member function on a constant object.
+Warning. Do not rely on the builder to catch a wrong call. builder.call in llvmlite accepts extra arguments
+without a word, llc accepts the IR it prints, and the program runs. With too few arguments, or an argument
+of the wrong type, llvmlite raises a Python exception instead. The number and the types of the arguments are
+checked by your semantic pass, which reports them as a compilation error.
+Code generation
+Generate the IR through a builder API — llvmlite.ir in Python, llvm::IRBuilder in C++ — for every construct
+of both stages. The only IR text the compiler writes is the module the builder prints (str(module) in llvmlite).
+• Stage 1: variables, arithmetic and comparisons with the right integer widths, if/else as basic blocks and a
+conditional branch, the overflow checks.
+• Functions: one function in the module per function of the program. Declare every function before you generate
+any body, so that a call to a function defined later resolves. Give your functions a prefix in the IR, so that a
+function named main or printf does not clash with the runtime.
+
+--- Verbatim user message 3 ---
+
+переглянь фідбек на попередню стейджу Project Stage 1 — feedback
+
+Submission format & code style — 1.5/2: clean modular code and a complete submission, but no reviewer was requested on the PR (-0.5).
+Language Design — 3.5/4: kaomoji literals and operators, keep/change, <- and when/otherwise make a distinct language, and the EBNF is complete. The overflow rules are only declared, not checked in any form (-0.5).
+Lexer & Syntax Parser — 5/5: a byte-level lexer with exact UTF-8 kaomoji matching, recursive descent with a function per rule, an AST hierarchy and a stable dump with fields and positions.
+Test cases — 3/3: 16 + 18, the runner checks exit codes and streams, all green.
+README.md — 1/1
+Total: 14/15  і також переглянь умову завдання та виконай його акуратно, вичерпно - зважаючи на всі детал і та вимоги по комітам також я оновлю в файлі ebnf а також правила синтаксис та вимоги по комітах. тестах та покритті вимоги Project Stage 2: code generation, functions & structures
+Languages and Compilers Design · Course project, stage 2 of 3 · deadline 27 October 2026, 23:59 (Kyiv time)
+Complete the second stage of the course project: make your language run. Extend it with functions, structures with
+fields and member functions, and two built-ins for input and output, and generate LLVM IR for every construct of
+Stage 1 and Stage 2. The compiled programs are checked by running them: a test passes when the program prints
+what you recorded.
+Grading (15 points total)
+Submission format and code style 2 pt
+Language design: EBNF and README 3 pt
+Front end: lexer and parser 2 pt
+Semantic analysis and code generation through the builder 5 pt
+Test cases 3 pt
+ai_usage_2.txt is required: a missing or incomplete file is a grade of 0 for the stage. IR assembled from strings instead of
+the builder gets 0 for Task 3. Late submission is 0.
+AI USAGE DISCLOSURE (REQUIRED)
+Include ai_usage_2.txt in the pull request and attach it to the Moodle submission. A complete file contains:
+• the tools you used, with their names;
+• the prompts as you sent them, or links to the full chat transcripts that open without a login;
+• for each part of the work: what you took as it was, what you changed and why;
+• what you understood: a few sentences in your own words about the code you did not write yourself.
+If you did not use AI, write so in the file. A file that is missing, holds only links, does not say what was taken and
+what was changed, leaves a part of the work undisclosed, or contains TODO placeholders is incomplete, and the
+stage is graded 0.
+WHERE THE WORK LIVES
+The same repository as Stage 1, on a new branch stage2. You may reuse code from your own practice solutions,
+but the language stays yours: the syntax of your Stage 1 language is kept and extended. Every Stage 1 program that
+was valid is still valid.
+The compiler keeps --ast and gains code generation:
+• python3 compiler.py input.txt output.ll (or your C++ binary with the same arguments) writes the
+module the builder printed to output.ll;
+• python3 compiler.py --ast input.txt prints the AST;
+• any error — lexical, syntax or semantic — is one line on stderr, compilation error: line L:C: message,
+a non-zero exit code and no output file. A Python traceback or a crash is never an error report.
+TASK 1 — EXTEND THE LANGUAGE (3 POINTS)
+Add to your language, in your own syntax:
+• Functions: a declaration with typed parameters and a result type, a body, and a way to leave the function with
+a value. A call is an expression; its arguments are expressions, and a call may be an argument of another call. A
+function may call itself and any function declared below it.
+• Structures with fields: a named type with typed fields, each constant or mutable; an object created with a
+value for every field; field access by name, also through a chain (c.center.x or its equivalent in your syntax);
+assignment to a field only through a chain that is mutable at every step.
+• Member functions: declared inside a structure; in the body, the fields and the other member functions of the
+structure are visible by name; called on an object. A member function that assigns a field may be called only on
+a mutable object.
+• read and print: read reads one integer from standard input; print prints an integer, a bool, a string literal,
+or an object as its type and its fields.
+Update grammar.ebnf: every new construct is in the grammar, with its lexical rules. Update README.md: one
+short example per feature, and the rules your semantic pass enforces — the types of arguments and results, what a
+1
+function body can see, how a name is looked up inside a member function when a parameter, a field and a global
+share it, how an object is printed, and where print puts a newline.
+Write the rule before the syntax. “A member function sees the fields” is a sentence; “inside a member function
+a name is looked up among the parameters and locals, then the fields, then the globals” is a rule that a semantic
+pass implements and a test can break. Each rule in the README is covered by one program that follows it and
+one that breaks it.
+TASK 2 — THE FRONT END (2 POINTS)
+Extend the lexer and the recursive-descent parser for every construct of Task 1. The lexer stays a hand-written state
+machine; the parser stays one function per grammar rule. --ast prints the new nodes with their fields and flags:
+parameter and result types, the mutability of fields, the arguments of a call, whether a chain ends in a member call.
+Every syntax error is reported with the line:column of the token that broke the rule.
+TASK 3 — SEMANTIC ANALYSIS AND CODE GENERATION (5 POINTS)
+Semantic analysis
+A separate pass over the AST, before code generation, with a symbol table for variables, functions (parameter types,
+result type), and structures (fields in order with their index, type and mutability; member functions with their
+signatures and whether they assign a field). It checks the Stage 1 rules — declaration before use, one declaration
+per scope, mutability, types, the overflow checks your README describes — and the new ones: the number and
+the types of arguments, the type of the value a function leaves with, field existence, the mutability of chains, the
+call of a mutating member function on a constant object.
+Warning. Do not rely on the builder to catch a wrong call. builder.call in llvmlite accepts extra arguments
+without a word, llc accepts the IR it prints, and the program runs. With too few arguments, or an argument
+of the wrong type, llvmlite raises a Python exception instead. The number and the types of the arguments are
+checked by your semantic pass, which reports them as a compilation error.
+Code generation
+Generate the IR through a builder API — llvmlite.ir in Python, llvm::IRBuilder in C++ — for every construct
+of both stages. The only IR text the compiler writes is the module the builder prints (str(module) in llvmlite).
+• Stage 1: variables, arithmetic and comparisons with the right integer widths, if/else as basic blocks and a
+conditional branch, the overflow checks.
+• Functions: one function in the module per function of the program. Declare every function before you generate
+any body, so that a call to a function defined later resolves. Give your functions a prefix in the IR, so that a
+function named main or printf does not clash with the runtime.
+• Structures: an identified struct type per declaration; an object is an alloca of it; a field is reached with a gep
+by its index, which comes from the symbol table, not from the name.
+• Member functions: one function in the module per pair (structure, member function), named after both, whose
+first parameter is a pointer to the object; a call passes the object’s address.
+• read and print: scanf and printf are declared in the module — a function with a type and no body — and
+clang links them against the C library. The format strings are global constants. print of an object walks the
+structure’s field table and emits one gep, load and printf per field, so a new structure prints without new
+compiler code.
+In llvmlite the two declarations and a read look like this:
+i32, i8p = ir.IntType(32), ir.IntType(8).as_pointer()
+c_type = ir.FunctionType(i32, [i8p], var_arg=True) # int f(const char *fmt, ...)
+printf = ir.Function(module, c_type, name="printf") # no blocks: a declaration
+scanf = ir.Function(module, c_type, name="scanf")
+slot = builder.alloca(i32) # read: scanf gets a pointer, not a value
+builder.call(scanf, [fmt_int, slot]) # fmt_int: a pointer to the global "%d"
+value = builder.load(slot)
+2
+AnAn i64 is printed with %lld, an i32 with %d; a bool is printed as true or false, not as a number. A format
+mismatch is not reported anywhere: the program just prints a wrong number.
+TASK 4 — TEST CASES (3 POINTS)
+• At least 20 valid programs and 20 invalid programs in total, the Stage 1 tests included. The Stage 1 tests keep
+passing.
+• At least 10 of the valid programs are end to end: the test compiles the program to .ll, builds and runs it
+(llc and clang, or lli), and compares its output with a file that holds the expected output exactly.
+• At least one end-to-end test reads input. Its input lives next to it in NAME.in; the expected file holds only what
+the program prints, since the input is not echoed.
+• Every invalid program has a file with the expected error line. Cover the new rules from the wrong side: too
+many and too few arguments, an argument of the wrong type, a function leaving with a value of the wrong type,
+an unknown field, an assignment through a constant chain, a mutating member function called on a constant
+object.
+• Your test script now also compiles, runs and compares. When NAME.in exists, it is the program’s standard
+input. The script runs every test and says which ones failed; all of them pass.
+In the course language, one end-to-end test could look like this; yours is written in your syntax.
+struct Point
+{
+ i32 x
+ i32 y
+ fn d2 := () -> i32
+ {
+ i32 r{x * x + y * y}
+ exit r
+ }
+}
+Point p{read(), read()}
+exit p.d2()
+point_read.in
+3 4
+point_read.expected
+Program exit with result 25
+OPTIONAL — EXTRAS BEYOND THE REQUIREMENTS
+Work beyond the requirements can make up for points lost elsewhere in this stage: a VS Code extension with
+highlighting or with diagnostics from your compiler, or a useful feature of your own. Describe it in the README.
+The total for the stage stays at most 15.
+SUBMISSION
+1. Stage 1 is graded: merge its pull request into main first. Then create the branch stage2 from main and commit
+as you go, with real messages.
+2. Make sure the branch contains everything: the source code, grammar.ebnf, README.md with build and run
+steps that work as written, ai_usage_2.txt, the tests and the test script. No generated .ll files, binaries or
+scratch files.
+3. Open a pull request from stage2 into main and request vovaskochko as a reviewer (a mention in a comment
+is not a review request). Do not merge it before the review.
+4. Submit in Moodle: the link to the pull request and ai_usage_2.txt.
+The last commit of the pull request before the deadline is what is graded. Submit by Saturday 24 October, and the
+pull request gets a review: you may fix what it finds and push again before the deadline. A submission after the
+deadline is graded 0.Implement FaceCard Project Stage 2 on the existing stage2 branch, treating the current Stage 1 implementation and the finalized grammar.ebnf as the source of truth and preserving every Stage 1-valid program; before editing, audit the existing handwritten byte-level lexer, recursive-descent parser, AST hierarchy, tests, README and Stage 1 semantics, then extend the language exactly as follows without inventing additional syntax: card declares a structure, fields come before member functions and use keep/change name:type syntax, serve declares both global and member functions using serve name(param:type, ...) -> resultType followed by a block, parameters are implicitly immutable, retrocede expression returns a value from a serve, while (⊙_⊙;) expression remains exclusively the top-level whole-program finish construct, calls use name(args), member calls use object.member(args) and may occur at the end of a field chain such as c.center.d2(), field access uses dot chains, assignment remains <- and may target a variable or field chain, object initialization uses the existing declaration syntax such as change p: Point = {3, 4}, draw() is a reserved built-in that reads exactly one i32 from standard input, and case-sensitive Engrave(expression) is a statement that prints its argument followed by a newline and has no value; IMPORTANT: implement string as a full first-class FaceCard type as an intentional EXTRA FEATURE BEYOND THE STAGE 2 REQUIREMENTS—the assignment itself only requires output of string literals, but FaceCard additionally allows string variables, keep/change string bindings, string assignment, string card fields, string function and member-function parameters, string function/member-function results, string literals as expressions and Engrave of string expressions; support the string escapes \\n, \\t, \\", and \\\\, represent string values in LLVM as pointers to null-terminated global UTF-8 constants so no dynamic allocation or garbage collection is required, allow only string-to-string assignment/parameter/return compatibility, and deliberately do NOT implement string concatenation, arithmetic or ==/!= comparisons in this stage; preserve FaceCard Stage 1 syntax and semantics including keep/change, i32/i64/flag, (✿◠‿◠), (╥﹏╥), ಠ_ಠ, <-, when/otherwise and (⊙_⊙;), preserve the existing numeric overflow and widening rules, keep + - * integer-only, keep == and != valid only for the Stage 1-supported integer/flag combinations, and keep ಠ_ಠ flag-only; keep the lexer a handwritten state machine over bytes with accurate line:column positions including UTF-8 kaomoji and string escape handling, keep the parser handwritten recursive descent with one natural parser method per grammar rule and deterministic --ast output, add the necessary AST nodes/fields for cards, fields, serves, parameters, calls, member calls, object initializers, field chains, retrocede, draw, Engrave and strings; implement a separate semantic-analysis pass before any LLVM generation with symbol tables for variables, global serves, card declarations and member serves, storing function parameter/result types, ordered card fields with index/type/mutability, resolved declarations and member mutation information; global serve bodies may see parameters, locals, card types and global serves but not top-level variables, while inside a member serve ordinary name lookup checks parameters/locals first and then fields of the current card, and unqualified calls resolve member serves of the current card before global serves; require every serve body to end with retrocede of a value compatible with its declared result type, validate argument count and types, return types, field existence, object initializer field count/order/types, declaration-before-use, duplicate declarations, mutability, Stage 1 overflow/type rules and every field-chain write, where the base object and every field link on a write path must be mutable; classify a member serve as mutating if it assigns one of its object fields or calls another mutating member serve on the same object or one of its fields, propagate mutating status to a fixed point, and reject mutating member calls through any constant link; every lexical, syntax or semantic failure must produce exactly one stderr line of the form compilation error: line L:C: message, exit non-zero and create no output file, never exposing a Python traceback; generate every Stage 1 and Stage 2 construct exclusively through llvmlite.ir builder APIs, never assembled LLVM text, declaring all global serves before generating bodies so recursion and forward calls work, prefix user function names in IR to avoid runtime collisions, generate identified LLVM struct types for cards and use semantic field indexes for GEP rather than field-name lookup in codegen, lower each member serve to a module function whose hidden first parameter is a pointer to its object and pass object addresses for member calls, lower draw() through scanf, lower Engrave through printf, print i32 with %d, i64 with %lld, flag as true/false, string with %s, and recursively print card objects from the semantic field table including string fields, with string fields rendered consistently in the documented object format; keep python3 compiler.py --ast input.txt and python3 compiler.py input.txt output.ll working, update grammar.ebnf and README.md to document the exact syntax and semantic rules plus one short example per feature and explicitly state that first-class string is a FaceCard extension beyond the Stage 2 requirements, preserve all Stage 1 tests, keep at least 20 valid and 20 invalid tests total, add at least 10 true end-to-end compile-and-run tests and at least one NAME.in stdin test, cover global/member serves, recursion/forward calls, cards, nested field chains, mutability errors, too many/few/wrong-type arguments, wrong retrocede type, unknown fields, const-chain assignment, mutating member calls on constant objects, draw, Engrave of every required value kind, string variable/assignment/field/parameter/result/member-result behavior, all four supported string escapes, and rejected string arithmetic/comparison/type mismatches, ensure the runner reports every failing test clearly, do not commit generated .ll files, binaries, caches or scratch files, and update ai_usage_2.txt completely and honestly with every AI-assisted part, the prompts or transcript links, what was taken as-is, what was changed and why, and concise explanations in the student's own words of AI-written code.
+
+--- Verbatim user message 4 ---
+
+щодо аі використання також зверни увагу на це не варто від третьої особи казати ai_usage.txt for Practice 6 retells the prompts instead of giving them as you sent them (-0.5).
+
+3. What I took, changed and why
+
+Audit and retained Stage 1 work:
+I used Codex to audit my byte lexer, recursive-descent parser, AST, README,
+grammar, tests and merge history before editing. I retained my Stage 1 source
+architecture and all 34 original test inputs and expected files unchanged.
+I used my finalized grammar and explicit FaceCard instructions as the source
+of truth for the syntax, rather than asking AI to invent another language.
+
+Frontend:
+I accepted AI-generated extensions to lexer.py, parser.py and ast_nodes.py:
+card/serve/retrocede, typed parameters, ordered fields, calls and chains,
+object initializers, draw, Engrave and strings. I retained handwritten scanning
+and parsing and Stage 1 dump compatibility. I changed the generic names of new
+punctuation tokens to readable diagnostic spellings and added source-byte
+tracking for invalid UTF-8 inside strings to improve diagnostic positions.
+
+Semantic analysis:
+I accepted the new AI-written semantics.py. I used a separate pass because
+Stage 1 only parsed syntax. It resolves symbols, validates types/arity/results,
+checks initializers and field paths, forbids constant writes and propagates
+member mutation through a fixed point. I retained the specified lookup order
+and exclusion of top-level variables from serve bodies. I added checks and
+negative fixtures for recursive by-value card layouts and duplicate declarations.
+
+LLVM backend:
+I accepted the AI-written codegen.py and CLI extension in compiler.py. I used
+llvmlite.ir APIs for every instruction, constant, block, identified card type,
+function and external C declaration. I changed the initial overflow lowering
+from widened arithmetic to LLVM signed-overflow builder intrinsics, avoiding
+unnecessary wide operations. I kept semantic field indexes for GEP and hidden
+object pointers for member calls. I added a top-level error boundary so dependency
+and I/O problems do not expose tracebacks, and protected cleanup from secondary
+I/O failures. No generated LLVM text is copied into compiler source.
+
+Strings and I/O:
+I accepted the AI implementation of my requested first-class string extension:
+pointers to immutable global null-terminated UTF-8 constants, strict string
+compatibility, all four escapes and string values in variables/fields/serves.
+I deliberately kept string concatenation, arithmetic and comparisons unsupported.
+I used printf formats matched to value types, raw decoded string fields and
+recursive field-table printing. I used scanf input with a range check before
+returning i32. These additions require no dynamic allocation or garbage collector.
+
+Tests:
+I accepted AI-written positive/negative Stage 2 fixtures, expected output/error
+files, input files and the compile/build/run runner extension. I retained the
+original golden tests unchanged. After the first run, I corrected one new nested
+call fixture that wrongly narrowed i64 to i32 and corrected byte-column offsets
+in new .err files; I did not weaken the type rules to make those tests pass.
+I added further cases for member mutation propagation, nested constant chains,
+card copies, strings, duplicates, syntax failures and runtime overflow. I added
+new AST golden files after inspecting their fields, flags and chain structure.
+
+Documentation and disclosure:
+I accepted the AI-assisted README rewrite, requirements/ignore updates and rule
+coverage matrix. I changed the disclosure into first-person wording and embedded
+my exact prompts after the earlier feedback about paraphrased Practice 6 prompts.
+This disclosure itself is AI-assisted. I do not present AI-written wording as
+independently written student reflection.
+
+Environment and Git:
+I used AI assistance to configure WSL prerequisites and a local Python environment,
+run regressions, inspect changes and make focused commits. Generated modules,
+executables and caches are excluded; test build artifacts use temporary folders.
+I used GitHub CLI for the stage2-to-main PR and an actual reviewer request rather
+than relying on a mention. I did not authorize merging Stage 2 before review.
+
+4. Explanation of the implementation (AI-assisted wording)
+The semantic pass runs before LLVM and resolves every variable, field and call
+into a symbol. It checks the argument count itself because LLVM's call builder
+cannot enforce the language's arity rules reliably. A writable field chain
+requires the base binding and every field along the path to be mutable. Member
+mutation information propagates through member calls until it stops changing,
+which catches indirect mutations even when the called member appears later.
+The LLVM builder creates typed instructions and control-flow blocks; str(module)
+serializes that structure. A string points to module-lifetime constant storage,
+so a returned string never points to a dead stack buffer. Cards are values and
+are copied, whereas member calls receive the address of the selected object.
+Constant arithmetic overflow is rejected before generation; dynamic overflow
+uses checked LLVM arithmetic and aborts instead of wrapping.
+
+Personal understanding requirement:
+I have not yet supplied my own unaided explanation in this conversation. The
+technical wording above was drafted with AI and is disclosed as such. Before
+Moodle submission I need to replace this statement with my own explanation of
+what I understood; I cannot honestly claim that AI knows my understanding.
