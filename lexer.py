@@ -148,6 +148,7 @@ class Lexer:
         line, column = self.line, self.column
         self._advance(1)
         value = bytearray()
+        positions = []
         escapes = {ord('n'): b'\n', ord('t'): b'\t', ord('"'): b'"', ord('\\'): b'\\'}
         while self.index < len(self.source):
             byte = self.source[self.index]
@@ -155,8 +156,8 @@ class Lexer:
                 self._advance(1)
                 try:
                     decoded = value.decode('utf-8')
-                except UnicodeDecodeError:
-                    raise LexError(line, column, 'invalid UTF-8 in string')
+                except UnicodeDecodeError as error:
+                    raise LexError(line, positions[error.start], 'invalid UTF-8 in string')
                 self.tokens.append(Token(TokenKind.STRING_LITERAL, decoded, line, column))
                 return
             if byte in (10, 13, 0):
@@ -166,8 +167,10 @@ class Lexer:
                 if self.index >= len(self.source) or self.source[self.index] not in escapes:
                     raise LexError(self.line, self.column, 'unsupported string escape')
                 value.extend(escapes[self.source[self.index]])
+                positions.append(self.column)
             else:
                 value.append(byte)
+                positions.append(self.column)
             self._advance(1)
         raise LexError(line, column, 'unterminated string literal')
 

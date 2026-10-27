@@ -60,7 +60,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         message = str(error).replace('\n', ' ').replace('\r', ' ')
         print(f"compilation error: line 1:1: {type(error).__name__}: {message}", file=sys.stderr)
         if args.output:
-            args.output.unlink(missing_ok=True)
+            try:
+                args.output.unlink(missing_ok=True)
+            except OSError:
+                pass
         return 1
 
     if args.ast:

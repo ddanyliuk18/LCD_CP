@@ -29,6 +29,18 @@ class ParseError(Exception):
 
 
 TOKEN_NAMES = {
+    TokenKind.CARD: "'card'",
+    TokenKind.SERVE: "'serve'",
+    TokenKind.RETROCEDE: "'retrocede'",
+    TokenKind.DRAW: "'draw'",
+    TokenKind.ENGRAVE: "'Engrave'",
+    TokenKind.STRING: "'string'",
+    TokenKind.STRING_LITERAL: 'string literal',
+    TokenKind.LPAREN: "'('",
+    TokenKind.RPAREN: "')'",
+    TokenKind.COMMA: "','",
+    TokenKind.DOT: "'.'",
+    TokenKind.ARROW: "'->'",
     TokenKind.KEEP: "'keep'",
     TokenKind.CHANGE: "'change'",
     TokenKind.I32: "'i32'",

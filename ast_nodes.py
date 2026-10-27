@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, fields
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 @dataclass
@@ -56,7 +56,7 @@ class DeclarationNode(StmtNode):
 
 @dataclass
 class AssignmentNode(StmtNode):
-    name: str
+    name: Union[str, ExprNode]
     value: ExprNode
 
 
