@@ -13,7 +13,8 @@ tools. I did not copy another student's compiler.
 
 These are copied from the conversation, in order, with nothing shortened or
 retold. Message 3 was my answer to a multiple-choice question from the assistant,
-so the question is included above it for context.
+so the question is included above it for context. Message 9 holds my answer for
+section 4 in Ukrainian.
 
 --- My message 1 ---
 
@@ -153,6 +154,54 @@ Options offered: Loops + break (Recommended), Higher-order functions, Generics, 
 
 Беремо найефектнфшу фічу, а потім ти мені поясниш і я тобі і підготуємося до захисту
 
+--- My message 4 ---
+
+там на мудлі трошки не правильні дати, тож це ок. Стосоно речень - скажи про що саме мені треба написати
+
+--- My message 5 ---
+
+для того аби я могла це описати потрібно аби ти дав мені опис всього що ти зробив
+
+--- My message 6 ---
+
+ти зробив справжню програму?
+
+--- My message 7 (terminal output I pasted) ---
+
+1 device has a firmware upgrade available.
+Run `fwupdmgr get-upgrades` for more information.
+
+Last login: Mon Oct 19 20:28:44 2026 from 172.26.96.1
+ubuntu@llvm-lab:~$ ls
+LCD-practice-6  LCD_practice7  lcd  practice1  practice4  program  project  repo  rest.ll  snap  test  test.ll  test.o
+ubuntu@llvm-lab:~$ cd project
+ubuntu@llvm-lab:~/project$ ls
+ubuntu@llvm-lab:~/project$
+
+--- My message 8 ---
+
+я не розумію суті програми
+
+--- My message 9 ---
+
+тільки певно варто англійською це додати:
+1. раніше функція була просто конструкцією, ми викликали її за іменем. А тепер функцію можна додати в змінну або передати як аргумент, тобто функція тепер не лише конструкція але і значення. синтаксис лямбди це кор нашої мови - каомоджі. Код поінтер це адреса машин. коду - інструкцій. Енв поінтер адреса середовища - це в код генераторі.
+2. адер памятає своє число адже зберігається на купі, тобто є динамічною але не автоматично керованою. маллок власне і створює все то діло на хіпі а не на стеку. І щоб не було витоку пам'яті ми маємо вивільнити змінну вручну.
+3.  коли ми викликаємо f(5) компілятор повинен
+
+повинен:
+1. Дістати з f вказівник на код.
+2. Дістати вказівник на середовище.
+3. Викликати функцію за адресою, яка зберігається у вказівнику.
+4. Передати середовище як прихований перший аргумент.
+5. Передати 5 як звичайний аргумент
+
+
+Engrave(add5(1)) дасть нам 6
+4. інлайнінг це оптимізація коли компілятор змінює виклик методу з а його вмістом тобто її логіка переноситься у місце виклику  . компілятор проходить і шукає кандидатів на оптимізацію, якщо вона не надо часто викликається (тобто щоб не збільшувати прогу окпіюванням) потім аргумент підставляється замість параметрів і змінна стає локальною  аое для неймінгу функцій додається номер інглайнінгу щоб не було проблем і колізій і логіка переноситься до місця виклику  і якщо функція вже оптимізована і ніяких проблем нема то вона видаляється
+
+5. оптимізатор видаляє те що не змінить поведінку програми, наприклад якусь невикористанну зміну, мертвий код
+
 3. What I took as it was, what I changed, and why
 
 I did not write the code of this stage by hand. The assistant wrote it and I
@@ -212,3 +261,44 @@ Documentation (README.md, tests/coverage.md):
 This file (ai_usage_3.txt):
 - The assistant wrote sections 1 to 3 from the conversation and I reviewed them.
   The prompts are copied, not retold, because of the feedback on ai_usage.txt.
+- Before writing section 4 I asked the assistant to explain all the work to me
+  and what to write about (messages 4, 5 and 8).
+
+4. What I understood
+
+I wrote this in Ukrainian, in message 9. The assistant translated it into English.
+It also corrected two facts, which I accepted because of the deadline: FaceCard
+never frees the environment, where I wrote that it must be freed by hand, and a
+function is inlined when it is called exactly once, where I wrote "not too often".
+
+1. Before, a function was only a construct that we called by name. Now a function
+can be stored in a variable or passed as an argument, so a function is not only a
+construct but also a value. The lambda syntax is the core of our language: a
+kaomoji. The code pointer is the address of the machine code, the instructions.
+The environment pointer is the address of the environment. This is in the code
+generator.
+
+2. The lambda from adder remembers its number because it is stored on the heap,
+which is dynamic memory that is not managed automatically. malloc creates all of
+this on the heap and not on the stack. Normally this memory has to be freed by
+hand to avoid a leak, but FaceCard never frees it.
+
+3. When we call f(5), the compiler has to:
+   1. Get the code pointer from f.
+   2. Get the environment pointer.
+   3. Call the function at the address stored in the pointer.
+   4. Pass the environment as a hidden first argument.
+   5. Pass 5 as an ordinary argument.
+Engrave(add5(1)) gives us 6.
+
+4. Inlining is an optimization where the compiler replaces a call of a function
+with its contents, so its logic moves to the place of the call. The compiler walks
+through the program and looks for candidates: a function that is called exactly
+once, so that the program does not grow by copying. Then the argument is given to
+the parameter, which becomes a local variable, and the inlining number is added to
+the names so there are no problems or collisions, and the logic moves to the place
+of the call. If the function has been inlined and there are no problems, it is
+removed.
+
+5. The optimizer removes what will not change the behaviour of the program, for
+example an unused variable or dead code.
