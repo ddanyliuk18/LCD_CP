@@ -6,6 +6,7 @@ from typing import Optional, Sequence
 
 from ast_nodes import dump_ast
 from lexer import LexError, Lexer
+from optimizer import optimize
 from parser import ParseError, Parser
 from semantics import Analyzer, SemanticError
 
@@ -28,9 +29,10 @@ def compile_ast(path: Path) -> str:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     argument_parser = argparse.ArgumentParser(prog="compiler.py")
     argument_parser.add_argument("--ast", action="store_true", help="print the parsed AST")
+    argument_parser.add_argument("--optimize", action="store_true", help="optimize the checked tree first")
     argument_parser.add_argument("input", type=Path, help="UTF-8 FaceCard source file")
     argument_parser.add_argument("output", type=Path, nargs='?', help='LLVM module output')
-    args = argument_parser.parse_args(argv)
+    args = argument_parser.parse_intermixed_args(argv)
 
     if not args.ast and args.output is None:
         argument_parser.error('code generation requires an output path')
@@ -42,10 +44,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         if args.output:
             args.output.unlink(missing_ok=True)
         tree = Parser(Lexer(args.input.read_bytes()).scan()).parse_program()
+        analysis = optimize(tree) if args.optimize else None
         if args.ast:
             output = dump_ast(tree)
         else:
-            analysis = Analyzer().analyze(tree)
+            analysis = analysis or Analyzer().analyze(tree)
             from codegen import Generator
             output = Generator(analysis).generate(tree)
             args.output.write_text(output, encoding='utf-8')
