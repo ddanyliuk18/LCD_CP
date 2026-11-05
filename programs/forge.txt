@@ -1,0 +1,271 @@
+card Step
+{
+keep action:string
+keep amount:i32
+}
+
+card Row
+{
+keep input:i32
+keep output:i32
+}
+
+card Machine
+{
+change stages:(i32) -> i32
+change recipe:() -> i32
+change previous_stages:(i32) -> i32
+change previous_recipe:() -> i32
+change count:i32
+change previous_count:i32
+change can_undo:flag
+
+serve remember() -> i32
+{
+previous_stages <- stages
+previous_recipe <- recipe
+previous_count <- count
+can_undo <- (✿◠‿◠)
+retrocede count
+}
+
+serve attach(stage:(i32) -> i32, action:string, amount:i32) -> i32
+{
+keep saved:i32 = remember()
+stages <- compose(stage, stages)
+recipe <- with_step(recipe, action, amount)
+count <- count + 1
+Engrave("Stages in the machine:")
+Engrave(count)
+retrocede count
+}
+
+serve repeat_all(times:i32) -> i32
+{
+keep saved:i32 = remember()
+stages <- repeated(stages, times)
+recipe <- with_step(recipe, "repeat everything, total runs", times)
+Engrave("The whole machine now runs this many times:")
+Engrave(times)
+retrocede times
+}
+
+serve undo() -> i32
+{
+when can_undo
+{
+stages <- previous_stages
+recipe <- previous_recipe
+count <- previous_count
+can_undo <- (╥﹏╥)
+Engrave("Last change undone.")
+}
+otherwise
+{
+Engrave("Nothing to undo.")
+}
+retrocede 0
+}
+
+serve show_table() -> i32
+{
+Engrave("First input of the table?")
+keep first:i32 = draw()
+Engrave("How many rows, from 1 to 9?")
+keep rows:i32 = draw()
+when within(rows, 9)
+{
+keep printed:i32 = table(stages, first, rows)
+Engrave("Sum of all outputs:")
+Engrave(fold(plus, stages, first, rows, 0))
+}
+otherwise
+{
+Engrave("That is not from 1 to 9.")
+}
+retrocede 0
+}
+
+serve handle(choice:i32) -> i32
+{
+when choice == 1
+{
+Engrave("Add how much?")
+keep amount:i32 = draw()
+keep done:i32 = attach(adding(amount), "add", amount)
+}
+when choice == 2
+{
+Engrave("Subtract how much?")
+keep amount:i32 = draw()
+keep done:i32 = attach((づ◕‿◕)づ (x:i32) -> i32 => x - amount, "subtract", amount)
+}
+when choice == 3
+{
+Engrave("Multiply by how much?")
+keep amount:i32 = draw()
+keep done:i32 = attach(multiplying(amount), "multiply by", amount)
+}
+when choice == 4
+{
+keep done:i32 = attach(square, "raise to the power", 2)
+}
+when choice == 5
+{
+Engrave("Run the whole machine how many times, from 1 to 9?")
+keep times:i32 = draw()
+when within(times, 9)
+{
+keep done:i32 = repeat_all(times)
+}
+otherwise
+{
+Engrave("That is not from 1 to 9.")
+}
+}
+when choice == 6
+{
+keep done:i32 = undo()
+}
+when choice == 7
+{
+Engrave("Recipe, first stage first:")
+keep done:i32 = recipe()
+}
+when choice == 8
+{
+Engrave("Value to send through the machine?")
+keep input:i32 = draw()
+keep row:Row = {input, stages(input)}
+Engrave(row)
+}
+when choice == 9
+{
+keep done:i32 = show_table()
+}
+when ಠ_ಠ within(choice, 9)
+{
+Engrave("Unknown choice, pick a number from the menu.")
+}
+retrocede 0
+}
+
+serve menu() -> i32
+{
+Engrave("")
+Engrave("1 add   2 subtract   3 multiply   4 square   5 repeat all")
+Engrave("6 undo  7 recipe     8 try value  9 table    0 quit")
+Engrave("Your choice?")
+keep choice:i32 = draw()
+when choice != 0
+{
+keep handled:i32 = handle(choice)
+keep next:i32 = menu()
+}
+retrocede 0
+}
+}
+
+serve identity(x:i32) -> i32
+{
+retrocede x
+}
+
+serve square(x:i32) -> i32
+{
+retrocede x * x
+}
+
+serve plus(a:i32, b:i32) -> i32
+{
+retrocede a + b
+}
+
+serve empty_recipe() -> i32
+{
+Engrave("Start with the value as it was typed.")
+retrocede 0
+}
+
+serve adding(amount:i32) -> (i32) -> i32
+{
+retrocede (づ◕‿◕)づ (x:i32) -> i32 => x + amount
+}
+
+serve multiplying(amount:i32) -> (i32) -> i32
+{
+retrocede (づ◕‿◕)づ (x:i32) -> i32 => x * amount
+}
+
+serve compose(after:(i32) -> i32, before:(i32) -> i32) -> (i32) -> i32
+{
+retrocede (づ◕‿◕)づ (x:i32) -> i32
+{
+keep middle:i32 = before(x)
+retrocede after(middle)
+}
+}
+
+serve repeated(stage:(i32) -> i32, times:i32) -> (i32) -> i32
+{
+change result:(i32) -> i32 = stage
+when times != 1
+{
+result <- compose(repeated(stage, times - 1), stage)
+}
+retrocede result
+}
+
+serve with_step(before:() -> i32, action:string, amount:i32) -> () -> i32
+{
+keep step:Step = {action, amount}
+retrocede (づ◕‿◕)づ () -> i32
+{
+keep earlier:i32 = before()
+Engrave(step)
+retrocede earlier + 1
+}
+}
+
+serve within(value:i32, limit:i32) -> flag
+{
+change found:flag = value == limit
+when ಠ_ಠ found
+{
+when limit != 1
+{
+found <- within(value, limit - 1)
+}
+}
+retrocede found
+}
+
+serve table(stage:(i32) -> i32, input:i32, rows:i32) -> i32
+{
+keep row:Row = {input, stage(input)}
+Engrave(row)
+when rows != 1
+{
+keep rest:i32 = table(stage, input + 1, rows - 1)
+}
+retrocede rows
+}
+
+serve fold(combine:(i32, i32) -> i32, stage:(i32) -> i32, input:i32, rows:i32, total:i32) -> i32
+{
+change result:i32 = combine(total, stage(input))
+when rows != 1
+{
+result <- fold(combine, stage, input + 1, rows - 1, result)
+}
+retrocede result
+}
+
+Engrave("Function Forge: build a function from stages, then use it.")
+Engrave("Every stage you add is a closure wrapped around the ones before it.")
+change machine:Machine = {identity, empty_recipe, identity, empty_recipe, 0, 0, (╥﹏╥)}
+keep finished:i32 = machine.menu()
+Engrave("Final machine, stages added:")
+Engrave(machine.count)
+Engrave("Goodbye!")
+(⊙_⊙;)0
