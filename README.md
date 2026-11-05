@@ -418,7 +418,7 @@ https://llvmlite.pydata.org/en/latest/user-guide/ir/ir-builder.html
 
 `python3 tests/run_tests.py` runs 132 cases. The original 16 valid AST and 18
 invalid diagnostic tests are retained, with 3 new syntax errors.
-`tests/e2e` contains 21 exact-output programs and three runtime-overflow checks.
+`tests/e2e` contains 20 exact-output programs and three runtime-overflow checks.
 It compiles LLVM, builds with clang and compares exact stdout bytes
 with `.expected`. Optional `.in` supplies stdin, without echo; `.status` marks
 a runtime-failure case. `tests/semantic_invalid` contains 58 negative programs and checks exact `.err`, nonzero
