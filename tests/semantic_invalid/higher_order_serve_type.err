@@ -1,0 +1,1 @@
+compilation error: line 9:15: expected (i32)->i32, got (i32,i32)->i32

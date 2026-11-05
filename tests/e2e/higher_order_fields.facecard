@@ -1,0 +1,29 @@
+card Button
+{
+keep label:string
+change action:(i32) -> i32
+change presses:i32
+serve press(value:i32) -> i32
+{
+presses <- presses + 1
+retrocede action(value)
+}
+serve scaled() -> (i32) -> i32
+{
+retrocede (づ◕‿◕)づ (x:i32) -> i32 => x * presses
+}
+}
+serve negate(x:i32) -> i32
+{
+retrocede 0 - x
+}
+change b:Button = {"go", negate, 0}
+Engrave(b.press(4))
+Engrave(b.action(5))
+keep once:(i32) -> i32 = b.scaled()
+b.action <- (づ◕‿◕)づ (x:i32) -> i32 => x + 1
+Engrave(b.press(4))
+Engrave(once(9))
+Engrave(b.scaled()(9))
+Engrave(b)
+(⊙_⊙;)0

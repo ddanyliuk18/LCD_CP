@@ -1,0 +1,10 @@
+serve apply(f:(i32) -> i32) -> i32
+{
+retrocede f(1)
+}
+serve two(a:i32, b:i32) -> i32
+{
+retrocede a + b
+}
+Engrave(apply(two))
+(⊙_⊙;)0

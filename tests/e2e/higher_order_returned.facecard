@@ -1,0 +1,17 @@
+serve adder(n:i32) -> (i32) -> i32
+{
+keep kept:i32 = n * 10
+retrocede (づ◕‿◕)づ (x:i32) -> i32 => x + kept
+}
+serve curried(a:i32) -> (i32) -> (i32) -> i32
+{
+retrocede (づ◕‿◕)づ (b:i32) -> (i32) -> i32 => (づ◕‿◕)づ (c:i32) -> i32 => a * 100 + b * 10 + c
+}
+keep one:(i32) -> i32 = adder(1)
+keep two:(i32) -> i32 = adder(2)
+Engrave(one(5))
+Engrave(two(5))
+Engrave(one(6))
+Engrave(adder(3)(4))
+Engrave(curried(1)(2)(3))
+(⊙_⊙;)0

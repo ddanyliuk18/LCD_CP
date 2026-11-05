@@ -1,0 +1,6 @@
+serve apply(f:(i32) -> i32, x:i32) -> i32
+{
+retrocede f(x)
+}
+Engrave(apply((づ◕‿◕)づ (x:flag) -> i32 => 1, 2))
+(⊙_⊙;)0

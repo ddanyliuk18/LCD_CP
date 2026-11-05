@@ -1,0 +1,28 @@
+serve widen(f:(i64) -> i64, x:i32) -> i64
+{
+retrocede f(x)
+}
+serve always(f:() -> flag) -> flag
+{
+retrocede ಠ_ಠ f()
+}
+serve choose(pick:flag) -> (i32, i32) -> i32
+{
+change result:(i32, i32) -> i32 = (づ◕‿◕)づ (a:i32, b:i32) -> i32 => a
+when ಠ_ಠ pick
+{
+result <- (づ◕‿◕)づ (a:i32, b:i32) -> i32 => b
+}
+retrocede result
+}
+Engrave(widen((づ◕‿◕)づ (x:i64) -> i64 => x * 3000000000, 2))
+Engrave(always((づ◕‿◕)づ () -> flag => (╥﹏╥)))
+Engrave(choose((✿◠‿◠))(1, 2))
+Engrave(choose((╥﹏╥))(1, 2))
+Engrave((づ◕‿◕)づ (x:i32) -> i32
+{
+retrocede x + 1
+}(41))
+keep small:(i32) -> i64 = (づ◕‿◕)づ (x:i32) -> i64 => x
+Engrave(small(9))
+(⊙_⊙;)0

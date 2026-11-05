@@ -1,0 +1,16 @@
+card Pair
+{
+change left:i32
+change right:i32
+}
+change n:i32 = 1
+change p:Pair = {10, 20}
+keep text:string = "captured"
+keep before:() -> i32 = (づ◕‿◕)づ () -> i32 => n + p.left
+keep show:() -> string = (づ◕‿◕)づ () -> string => text
+n <- 100
+p.left <- 500
+Engrave(before())
+Engrave(n)
+Engrave(show())
+(⊙_⊙;)0
