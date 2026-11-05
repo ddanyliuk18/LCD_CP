@@ -1,0 +1,23 @@
+card Label
+{
+change text:string
+serve replace(value:string) -> string
+{
+text <- value
+retrocede text
+}
+serve get() -> string
+{
+retrocede text
+}
+}
+serve echo(value:string) -> string
+{
+retrocede value
+}
+change l:Label = {"old"}
+l.text <- echo("new")
+Engrave(l.get())
+Engrave(l.replace("100% ready"))
+Engrave(l)
+(⊙_⊙;)0

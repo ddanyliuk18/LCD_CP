@@ -1,0 +1,104 @@
+Function Forge: build a function from stages, then use it.
+Every stage you add is a closure wrapped around the ones before it.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Value to send through the machine?
+Row{input=10, output=10}
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Recipe, first stage first:
+Start with the value as it was typed.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Add how much?
+Stages in the machine:
+1
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Multiply by how much?
+Stages in the machine:
+2
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Value to send through the machine?
+Row{input=1, output=12}
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Stages in the machine:
+3
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Recipe, first stage first:
+Start with the value as it was typed.
+Step{action=add, amount=5}
+Step{action=multiply by, amount=2}
+Step{action=raise to the power, amount=2}
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Last change undone.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Recipe, first stage first:
+Start with the value as it was typed.
+Step{action=add, amount=5}
+Step{action=multiply by, amount=2}
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Nothing to undo.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+First input of the table?
+How many rows, from 1 to 9?
+Row{input=1, output=12}
+Row{input=2, output=14}
+Row{input=3, output=16}
+Row{input=4, output=18}
+Sum of all outputs:
+60
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+First input of the table?
+How many rows, from 1 to 9?
+That is not from 1 to 9.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Run the whole machine how many times, from 1 to 9?
+That is not from 1 to 9.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Unknown choice, pick a number from the menu.
+
+1 add   2 subtract   3 multiply   4 square   5 repeat all
+6 undo  7 recipe     8 try value  9 table    0 quit
+Your choice?
+Final machine, stages added:
+2
+Goodbye!

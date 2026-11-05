@@ -1,0 +1,44 @@
+card Box
+{
+keep value:i32
+serve helper(x:i32) -> i32
+{
+retrocede 1000 + x
+}
+serve use() -> i32
+{
+retrocede wrapped(value)
+}
+}
+serve helper(x:i32) -> i32
+{
+retrocede x + 1
+}
+serve helper2(x:i32) -> i32
+{
+retrocede x + 2
+}
+serve wrapped(x:i32) -> i32
+{
+keep sum:i32 = helper(x) + helper(x)
+retrocede sum
+}
+serve condition(x:i32) -> flag
+{
+Engrave(x)
+retrocede x == 3
+}
+serve inside(x:i32) -> i32
+{
+retrocede helper2(x) * 2
+}
+keep b:Box = {2}
+Engrave(b.use())
+when condition(3)
+{
+Engrave(1)
+}
+keep f:(i32) -> i32 = (づ◕‿◕)づ (x:i32) -> i32 => inside(x)
+Engrave(f(1))
+Engrave(f(2))
+(⊙_⊙;)0

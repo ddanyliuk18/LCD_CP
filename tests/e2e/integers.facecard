@@ -1,0 +1,5 @@
+change n: i32 = 3
+n <- n * 4 - 2
+Engrave(n)
+Engrave(9000000000 + n)
+(⊙_⊙;)n

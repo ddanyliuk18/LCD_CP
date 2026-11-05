@@ -1,0 +1,11 @@
+card P
+{
+change x:i32
+serve set() -> i32
+{
+x <- 2
+retrocede x
+}
+}
+keep p:P = {1}
+(⊙_⊙;)p.set()

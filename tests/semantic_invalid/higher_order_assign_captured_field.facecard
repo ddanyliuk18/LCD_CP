@@ -1,0 +1,13 @@
+card Box
+{
+change value:i32
+serve make() -> () -> i32
+{
+retrocede (づ◕‿◕)づ () -> i32
+{
+value <- 2
+retrocede value
+}
+}
+}
+(⊙_⊙;)0

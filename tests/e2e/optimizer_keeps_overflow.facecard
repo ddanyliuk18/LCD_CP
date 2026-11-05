@@ -1,0 +1,4 @@
+keep c:i32 = draw()
+keep unused:i32 = c + 2147483647
+Engrave(1)
+(⊙_⊙;)0

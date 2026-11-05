@@ -1,0 +1,4 @@
+keep a:i64 = 9223372036854775807
+keep b:i64 = draw()
+Engrave(a + b)
+(⊙_⊙;)0

@@ -1,0 +1,43 @@
+Program @6:1
+  statements:
+    Declaration @6:1 name=sum type=i32 mutable=false
+      value:
+        Call @6:16
+          member_call=false
+          name='draw'
+          arguments:
+          receiver=None
+    Declaration @7:1 name=a type=i32 mutable=false
+      value:
+        IntegerLiteral @7:14 value=10
+    Engrave @8:1
+      value:
+        BinaryExpr @8:21 operator=+
+          left:
+            InlinedCall @8:9
+              function='add'
+              result_type='i32'
+              statements:
+                Declaration @1:11 name=add.1.a type=i32 mutable=false
+                  value:
+                    Identifier @8:13 name=a
+                Declaration @1:18 name=add.1.b type=i32 mutable=false
+                  value:
+                    Identifier @8:16 name=sum
+                Declaration @3:1 name=add.1.sum type=i32 mutable=false
+                  value:
+                    BinaryExpr @3:18 operator=+
+                      left:
+                        Identifier @3:16 name=add.1.a
+                      right:
+                        Identifier @3:20 name=add.1.b
+              result:
+                BinaryExpr @4:15 operator=*
+                  left:
+                    Identifier @4:11 name=add.1.sum
+                  right:
+                    IntegerLiteral @4:17 value=2
+          right:
+            IntegerLiteral @8:23 value=1
+  result:
+    IntegerLiteral @9:11 value=0

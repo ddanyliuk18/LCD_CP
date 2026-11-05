@@ -1,0 +1,25 @@
+serve repeat(f:(i32) -> i32, times:i32, x:i32) -> i32
+{
+change result:i32 = x
+when times != 0
+{
+result <- repeat(f, times - 1, f(x))
+}
+retrocede result
+}
+serve nest(depth:i32) -> (i32) -> i32
+{
+change result:(i32) -> i32 = (づ◕‿◕)づ (x:i32) -> i32 => x
+when depth != 0
+{
+keep inner:(i32) -> i32 = nest(depth - 1)
+result <- (づ◕‿◕)づ (x:i32) -> i32 => inner(x) + depth
+}
+retrocede result
+}
+Engrave(repeat((づ◕‿◕)づ (x:i32) -> i32 => x * 2, 10, 1))
+Engrave(nest(4)(100))
+keep outer:i32 = draw()
+keep mid:(i32) -> (i32) -> i32 = (づ◕‿◕)づ (a:i32) -> (i32) -> i32 => (づ◕‿◕)づ (b:i32) -> i32 => outer + a + b
+Engrave(mid(1)(2))
+(⊙_⊙;)0

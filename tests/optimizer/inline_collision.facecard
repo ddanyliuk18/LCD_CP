@@ -1,0 +1,19 @@
+serve inner(x:i32) -> i32
+{
+change y:i32 = x
+when y == 1
+{
+keep x:i32 = 100
+y <- x + y
+}
+retrocede y
+}
+serve outer(x:i32) -> i32
+{
+keep y:i32 = x + 1
+retrocede inner(y - 1) + y
+}
+keep x:i32 = 1
+keep y:i32 = 50
+Engrave(outer(x) + y)
+(⊙_⊙;)0

@@ -1,0 +1,6 @@
+card P
+{
+change x:i32
+}
+change p:P = {1}
+(⊙_⊙;)p.y

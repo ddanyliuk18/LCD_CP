@@ -1,0 +1,17 @@
+serve apply(f:(i32) -> i32, x:i32) -> i32
+{
+retrocede f(x)
+}
+serve double(x:i32) -> i32
+{
+retrocede x * 2
+}
+keep bonus:i32 = 7
+Engrave(apply(double, 21))
+Engrave(apply((づ◕‿◕)づ (x:i32) -> i32 => x + bonus, 1))
+Engrave(apply((づ◕‿◕)づ (x:i32) -> i32
+{
+keep y:i32 = x * x
+retrocede y + bonus
+}, 3))
+(⊙_⊙;)0

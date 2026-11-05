@@ -1,0 +1,4 @@
+change first: i32 = draw()
+keep second: i32 = draw()
+Engrave(first * first + second * second)
+(⊙_⊙;)0

@@ -1,0 +1,304 @@
+AI usage disclosure — FaceCard Project Stage 3
+
+1. Tools I used
+
+Claude Code, Anthropic's coding agent, running the model Claude Opus 5.5
+(claude-opus-5-5) inside the VS Code extension. It worked directly in my
+repository: it read and edited files, ran commands, made the commits and opened
+the pull request. Through it I used Git, GitHub CLI, Python 3.12, llvmlite 0.47,
+and clang and llc 18 on Ubuntu in WSL. It used no web search and no other AI
+tools. I did not copy another student's compiler.
+
+2. My prompts, exactly as I sent them
+
+These are copied from the conversation, in order, with nothing shortened or
+retold. Message 3 was my answer to a multiple-choice question from the assistant,
+so the question is included above it for context. Message 9 holds my answer for
+section 4 in Ukrainian.
+
+--- My message 1 ---
+
+це фідбек на ai_usage.txt  retells the prompts in the third person instead of giving them as you sent them, and does not say what you took as-is and what you changed (-0.5). мені необхідно виконати стейдж 3 вичерпно, якісно, з усім покриттям тестів, фіч, додаткових завдань на додаткові бали , а також авжеж з правильною кількістю комітів. Надсилаю умову і нумо робити, а якщо треба моє рішення - кажи. Project Stage 3: a feature of your own, optimization &
+a real program Languages and Compilers Design · Course project, stage 3 of 3 · deadline 5 November 2026, 23:59 (Kyiv time)
+Stages 1 and 2 built what every compiler in the room has. Stage 3 is where yours becomes different: one language
+feature that was not built in class, chosen from the menu below and designed by you; an optimizer that makes
+programs smaller without changing what they print; and a real, interactive program written in your language,
+compiled to a native binary, that uses all of it. The program is also what you show at the defence.
+Grading (15 points total)
+Submission format and code style 2 pt
+Task 1 — one feature of your own 5 pt
+Task 2 — the optimizer 4 pt
+Task 3 — the real program 4 pt
+ai_usage_3.txt is required: a missing or incomplete file is a grade of 0 for the stage. IR assembled from strings instead of
+the builder gets 0 for the task it appears in. Late submission is 0.
+AI USAGE DISCLOSURE (REQUIRED)
+Include ai_usage_3.txt in the pull request and attach it to the Moodle submission. A complete file contains:
+• the tools you used, with their names;
+• the prompts as you sent them, or links to the full chat transcripts that open without a login;
+• for each part of the work: what you took as it was, what you changed and why;
+• what you understood: a few sentences in your own words about the code you did not write yourself.
+If you did not use AI, write so in the file. A file that is missing, holds only links, does not say what was taken and
+what was changed, leaves a part of the work undisclosed, or contains TODO placeholders is incomplete, and the
+stage is graded 0.
+WHERE THE WORK LIVES
+The same repository, on a new branch stage3 created from stage2. The language stays yours: every program
+that was valid in Stage 2 is still valid and prints the same.
+The compiler keeps its interface and gains one flag:
+• python3 compiler.py input.txt output.ll (or your C++ binary with the same arguments) writes the
+module the builder printed;
+• --ast prints the tree; --optimize, anywhere on the command line, runs the optimizer of Task 2 before code
+generation, and together with --ast prints the tree after it;
+• any error is one line on stderr, compilation error: line L:C: message, a non-zero exit code and no
+output file.
+TASK 1 — ONE FEATURE OF YOUR OWN (5 POINTS)
+Pick one. Each row says what the feature must include to count. Comments, a renamed keyword, a new emoji, a
+third integer type or a unary minus are not features. Not sure whether yours counts? Ask before you build it.
+Feature What it must include
+Higher-order functions a lambda or a function passed as an argument and called inside; a function that returns
+a lambda, its captured values travelling with it; the type of what is passed is checked
+at the call. Your choice how: a function type (a pointer to the body plus the captured
+values) or a template instantiated per lambda
+Inheritance a structure declared as an extension of another: the base fields first in the layout, then
+the new ones; a duplicate field is an error; a member function of the base callable on the
+derived object; a virtual member function called through a table of function pointers
+stored in the object, so that a derived object used as the base calls its own version
+1
+Generics a template function or structure with a type parameter; instantiation by copying the
+tree and substituting the type; one generated function per used type, with a mangled
+name and a cache; a wrong instantiation is an error at the use site; optional: a requirement on the type checked before the copy
+Coroutines a function that can yield a value and later continue where it stopped; its locals and
+its resume point live in a structure; each resume runs to the next yield; the README
+says what a resume after the last yield does
+Threads start a function on a thread and wait for it, built on the declared pthread_create and
+pthread_join; arguments travel in a structure; the README says what happens to
+a variable two threads write; optional: a mutex
+Loops while with a condition and for over an integer range; lowered to basic blocks with a
+back edge; a loop inside a loop; a loop whose body declares a variable; optional break
+Arrays a fixed-size array of a built-in type; index read and write; an index out of range on a
+constant is a compile error, on a value a run-time error that prints and exits; an array
+passed to a function
+Strings a variable of string type, comparison or concatenation or length, read of a string; the
+README says who owns the memory
+Overloading several functions with one name and different parameter lists; resolution by the argument types at the call; an ambiguous or unmatched call is an error
+Piping x |> f |> g (your spelling) as a chain of calls; the type of each stage’s output is
+checked against the next stage’s input; an error names the stage that does not fit
+Encapsulation public / private on fields and member functions; access from outside the structure
+to a private member is an error with the member’s name; the README says what is
+private by default
+Deliverables for the feature:
+• its rules in the README, with two example programs, and its syntax in grammar.ebnf;
+• at least 3 valid and 3 invalid test programs named after it, run by your test script;
+• in the README, one excerpt of the IR your compiler produces for it — ten to twenty lines of output.ll
+— with three sentences on what each part does: the table of function pointers and the indirect call, the two
+instantiations with their names, the back edge of the loop, the structure that keeps a coroutine’s state. The
+builder writes the IR; the excerpt shows you can read it.
+TASK 2 — THE OPTIMIZER (4 POINTS)
+Three transformations of the checked tree behind --optimize, run before code generation:
+• Unused variables (1 point) — a declaration nobody reads is removed with its assignments, again and again until
+a pass removes nothing; scopes and shadowing are respected; an expression that calls a function or read() is
+never dropped.
+• Unused functions (1 point) — a function nobody calls is removed with its whole body, again and again:
+removing a body may leave another function unused.
+• Inlining (2 points) — a function called exactly once is replaced at its call site by its body: each parameter becomes
+a local declaration initialised with the argument, the exit of the body becomes the value that stands where
+the call stood, names are renamed so they cannot collide with the caller’s, and the function is then removed as
+unused. A recursive function is never inlined. The README says which shapes you inline and which you leave
+alone, for example a body that leaves through exit inside an if.
+The proof is mechanical. A folder of at least 6 programs, two per transformation, each with the expected tree after
+--optimize --ast and the expected output; the output is the same with and without the flag. Every other test
+of your suite also passes with the flag. Add to the README one before/after excerpt of the IR for the inlining of
+one function.TASK 3 — THE REAL PROGRAM (4 POINTS)
+A program in your language that a person can use: it prints prompts, reads input, computes something and prints
+results. It uses at least one structure with a member function, at least one function, read and print, and your
+feature — visibly, not in a corner. What it does is up to you: a small game, a calculator over structures, a filter over
+values, a scheduler of tasks if you built threads or coroutines.
+• programs/NAME.txt — the program; a stranger can follow the prompts.
+• At least two recorded sessions: programs/NAME.in with what the user types and programs/NAME.expected
+with the exact output, prompts included. Your test script runs them.
+• The exact commands that turn the program into a native binary with llc and clang, in the README; lli is
+not the deliverable.
+• Ten lines in the README: what the program does, where it uses your feature, and the command that runs each
+session.
+Warning. Build Task 3 first, in the smallest form that runs, and grow it. A feature that no program uses is
+untested in the only way that matters here, and the program finds the bugs in the feature faster than the tests do.
+THE DEFENCE — WEDNESDAY 11 NOVEMBER
+Each student presents once, in the order the pull requests were submitted: seven minutes in all. Three minutes are
+yours — the language, the feature, the optimizer and the program running from the binary on your laptop; then
+questions on your code and its IR. Upload the slides as a PDF to Moodle by Tuesday 10 November, 12:00: three to
+five slides — the language, the feature with its IR excerpt, the optimizer before and after, the program. The defence
+is graded separately, 5 points: the presentation 1, how it covers the language, the compiler and the program 2, the
+answers 2.
+SUBMISSION
+1. By Friday 30 October: create the branch stage3 from stage2, push it, and open a draft pull request stage3
+→ main whose description names the feature you chose.
+2. When Stage 2 is graded, merge its pull request into main. The Stage 3 pull request then shows only Stage 3.
+3. Make sure the branch contains everything: the source code, grammar.ebnf, README.md, ai_usage_3.txt,
+the tests, the optimizer’s tests, programs/ and the test script. No generated .ll files, binaries or scratch files.
+4. Mark the pull request ready for review and request vovaskochko as a reviewer. Do not merge it before the
+review.
+5. Submit in Moodle: the link to the pull request and ai_usage_3.txt.
+The last commit of the pull request before the deadline is what is graded. Submit by Monday 2 November, and the
+pull request gets a review: you may fix what it finds and push again before the deadline. A submission after the
+deadline is graded 0.
+
+--- My message 2 ---
+
+тільки зроби гілку від стейджі 2
+
+--- The assistant's question before my message 3 ---
+
+Яку фічу Task 1 беремо для FaceCard? До дедлайну (23:59 сьогодні) лишилося близько 2,5 години, а ти маєш уміти пояснити її IR на захисті. У мові зараз немає циклів і масивів, є лише рекурсія.
+Options offered: Loops + break (Recommended), Higher-order functions, Generics, Arrays.
+
+--- My message 3 ---
+
+Беремо найефектнфшу фічу, а потім ти мені поясниш і я тобі і підготуємося до захисту
+
+--- My message 4 ---
+
+там на мудлі трошки не правильні дати, тож це ок. Стосоно речень - скажи про що саме мені треба написати
+
+--- My message 5 ---
+
+для того аби я могла це описати потрібно аби ти дав мені опис всього що ти зробив
+
+--- My message 6 ---
+
+ти зробив справжню програму?
+
+--- My message 7 (terminal output I pasted) ---
+
+1 device has a firmware upgrade available.
+Run `fwupdmgr get-upgrades` for more information.
+
+Last login: Mon Oct 19 20:28:44 2026 from 172.26.96.1
+ubuntu@llvm-lab:~$ ls
+LCD-practice-6  LCD_practice7  lcd  practice1  practice4  program  project  repo  rest.ll  snap  test  test.ll  test.o
+ubuntu@llvm-lab:~$ cd project
+ubuntu@llvm-lab:~/project$ ls
+ubuntu@llvm-lab:~/project$
+
+--- My message 8 ---
+
+я не розумію суті програми
+
+--- My message 9 ---
+
+тільки певно варто англійською це додати:
+1. раніше функція була просто конструкцією, ми викликали її за іменем. А тепер функцію можна додати в змінну або передати як аргумент, тобто функція тепер не лише конструкція але і значення. синтаксис лямбди це кор нашої мови - каомоджі. Код поінтер це адреса машин. коду - інструкцій. Енв поінтер адреса середовища - це в код генераторі.
+2. адер памятає своє число адже зберігається на купі, тобто є динамічною але не автоматично керованою. маллок власне і створює все то діло на хіпі а не на стеку. І щоб не було витоку пам'яті ми маємо вивільнити змінну вручну.
+3.  коли ми викликаємо f(5) компілятор повинен
+
+повинен:
+1. Дістати з f вказівник на код.
+2. Дістати вказівник на середовище.
+3. Викликати функцію за адресою, яка зберігається у вказівнику.
+4. Передати середовище як прихований перший аргумент.
+5. Передати 5 як звичайний аргумент
+
+
+Engrave(add5(1)) дасть нам 6
+4. інлайнінг це оптимізація коли компілятор змінює виклик методу з а його вмістом тобто її логіка переноситься у місце виклику  . компілятор проходить і шукає кандидатів на оптимізацію, якщо вона не надо часто викликається (тобто щоб не збільшувати прогу окпіюванням) потім аргумент підставляється замість параметрів і змінна стає локальною  аое для неймінгу функцій додається номер інглайнінгу щоб не було проблем і колізій і логіка переноситься до місця виклику  і якщо функція вже оптимізована і ніяких проблем нема то вона видаляється
+
+5. оптимізатор видаляє те що не змінить поведінку програми, наприклад якусь невикористанну зміну, мертвий код
+
+3. What I took as it was, what I changed, and why
+
+I did not write the code of this stage by hand. The assistant wrote it and I
+decided what was built. "Changed" below means a change from the assistant's first
+version, with the reason. The first group of decisions is mine; the fixes were
+found by running the program and the tests, and the assistant made them.
+
+Decisions that were mine:
+- The feature. The assistant recommended Loops with break as the lowest risk. I
+  did not take that recommendation and chose the most impressive feature instead,
+  which is higher-order functions.
+- The branch: stage3 created from stage2, as I asked in message 2.
+- The aims in message 1: full test coverage, separate commits, and a disclosure
+  that fixes the -0.5 from my earlier ai_usage.txt.
+
+Task 1, higher-order functions (lexer.py, parser.py, ast_nodes.py, grammar.ebnf,
+semantics.py, codegen.py):
+- Taken as it was: the design and the code. That covers the function type, the
+  lambda syntax, capture by value, the pair of a body pointer and a heap
+  environment, thunks for named serves, and the rule that a local function
+  variable hides a serve but a non-function variable does not.
+- Changed: the module now sets the host target triple, because llc refused the
+  old "unknown-unknown-unknown". The lambda token stayed a kaomoji and not a word,
+  because a new reserved word would break Stage 2 programs that use that name.
+
+Task 2, the optimizer (optimizer.py, compiler.py):
+- Taken as it was: the three passes, the InlinedCall and ExpressionStatement nodes,
+  the renaming to function.N.name, and rechecking the tree after every pass.
+- Changed: the command line now uses parse_intermixed_args, because the first
+  version failed on "input --optimize output" and the task says the flag works
+  anywhere. An unused card whose initializer has a call now keeps only those calls,
+  because keeping the initializer itself made the recheck fail. Arithmetic that may
+  overflow is kept, because removing it would remove an abort and change the output;
+  the task only names calls and read(), so this is stricter than it asks.
+
+Task 3, the program (programs/):
+- Taken as it was: the idea of Function Forge, the code and the prompts.
+- Changed: undo now restores the stage count, because the first recorded session
+  showed the wrong count after an undo. The labels of the square stage and of the
+  empty recipe were reworded after reading the output.
+- The two recorded sessions were generated by running the program. The assistant
+  checked the values by hand before they were recorded.
+
+Tests (tests/):
+- Taken as it was: all new programs, the optimizer folder and the changes to
+  tests/run_tests.py. Expected trees and outputs were recorded from the compiler
+  after the assistant checked them against hand calculation.
+- Changed: the unused_variables_effects test first aborted on overflow by mistake.
+  Its input was changed, and the overflow case moved to its own test,
+  optimizer_keeps_overflow, which expects the abort.
+
+Documentation (README.md, tests/coverage.md):
+- Taken as it was: the text, and the IR excerpts, which are copied from real
+  compiler output.
+- Changed: one test count in the README, after checking it against the folders.
+
+This file (ai_usage_3.txt):
+- The assistant wrote sections 1 to 3 from the conversation and I reviewed them.
+  The prompts are copied, not retold, because of the feedback on ai_usage.txt.
+- Before writing section 4 I asked the assistant to explain all the work to me
+  and what to write about (messages 4, 5 and 8).
+
+4. What I understood
+
+I wrote this in Ukrainian, in message 9. The assistant translated it into English.
+It also corrected two facts, which I accepted because of the deadline: FaceCard
+never frees the environment, where I wrote that it must be freed by hand, and a
+function is inlined when it is called exactly once, where I wrote "not too often".
+
+1. Before, a function was only a construct that we called by name. Now a function
+can be stored in a variable or passed as an argument, so a function is not only a
+construct but also a value. The lambda syntax is the core of our language: a
+kaomoji. The code pointer is the address of the machine code, the instructions.
+The environment pointer is the address of the environment. This is in the code
+generator.
+
+2. The lambda from adder remembers its number because it is stored on the heap,
+which is dynamic memory that is not managed automatically. malloc creates all of
+this on the heap and not on the stack. Normally this memory has to be freed by
+hand to avoid a leak, but FaceCard never frees it.
+
+3. When we call f(5), the compiler has to:
+   1. Get the code pointer from f.
+   2. Get the environment pointer.
+   3. Call the function at the address stored in the pointer.
+   4. Pass the environment as a hidden first argument.
+   5. Pass 5 as an ordinary argument.
+Engrave(add5(1)) gives us 6.
+
+4. Inlining is an optimization where the compiler replaces a call of a function
+with its contents, so its logic moves to the place of the call. The compiler walks
+through the program and looks for candidates: a function that is called exactly
+once, so that the program does not grow by copying. Then the argument is given to
+the parameter, which becomes a local variable, and the inlining number is added to
+the names so there are no problems or collisions, and the logic moves to the place
+of the call. If the function has been inlined and there are no problems, it is
+removed.
+
+5. The optimizer removes what will not change the behaviour of the program, for
+example an unused variable or dead code.

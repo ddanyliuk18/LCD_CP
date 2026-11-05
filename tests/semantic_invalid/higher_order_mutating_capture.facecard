@@ -1,0 +1,12 @@
+card Counter
+{
+change n:i32
+serve bump() -> i32
+{
+n <- n + 1
+retrocede n
+}
+}
+change c:Counter = {0}
+keep f:() -> i32 = (づ◕‿◕)づ () -> i32 => c.bump()
+(⊙_⊙;)0

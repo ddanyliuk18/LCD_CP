@@ -1,0 +1,12 @@
+card P
+{
+change x:i32
+}
+card C
+{
+keep p:P
+}
+keep p:P = {1}
+change c:C = {p}
+c.p.x <- 2
+(⊙_⊙;)0

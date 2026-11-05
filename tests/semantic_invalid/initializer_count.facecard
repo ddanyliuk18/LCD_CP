@@ -1,0 +1,7 @@
+card P
+{
+change x:i32
+keep y:i32
+}
+keep p:P = {1}
+(⊙_⊙;)0

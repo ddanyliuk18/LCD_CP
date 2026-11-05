@@ -1,0 +1,21 @@
+card Box
+{
+keep x:i32
+serve value() -> i32
+{
+retrocede x
+}
+serve shadow(x:i32) -> i32
+{
+retrocede x + value()
+}
+}
+serve value() -> i32
+{
+retrocede 100
+}
+keep x:i32 = 200
+keep b:Box = {3}
+Engrave(b.shadow(4))
+Engrave(value())
+(⊙_⊙;)0

@@ -1,0 +1,193 @@
+Program @36:1
+  Function @1:1
+    name='factorial'
+    parameters:
+      Parameter @1:17
+        name='n'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @2:1
+        Declaration @3:1 name=result type=i32 mutable=true
+          value:
+            IntegerLiteral @3:21 value=1
+        If @4:1 has_else=false
+          condition:
+            BinaryExpr @4:8 operator=!=
+              left:
+                Identifier @4:6 name=n
+              right:
+                IntegerLiteral @4:11 value=0
+          then:
+            Block @5:1
+              Assignment @6:1 name=result
+                value:
+                  BinaryExpr @6:13 operator=*
+                    left:
+                      Identifier @6:11 name=n
+                    right:
+                      Call @6:15
+                        member_call=false
+                        name='factorial'
+                        arguments:
+                          BinaryExpr @6:27 operator=-
+                            left:
+                              Identifier @6:25 name=n
+                            right:
+                              IntegerLiteral @6:29 value=1
+                        receiver=None
+        Return @8:1
+          value:
+            Identifier @8:11 name=result
+  Function @10:1
+    name='even'
+    parameters:
+      Parameter @10:12
+        name='n'
+        type_name='i32'
+    result_type='flag'
+    body:
+      Block @11:1
+        Declaration @12:1 name=result type=flag mutable=true
+          value:
+            BooleanLiteral @12:22 value=true
+        If @13:1 has_else=false
+          condition:
+            BinaryExpr @13:8 operator=!=
+              left:
+                Identifier @13:6 name=n
+              right:
+                IntegerLiteral @13:11 value=0
+          then:
+            Block @14:1
+              Assignment @15:1 name=result
+                value:
+                  Call @15:11
+                    member_call=false
+                    name='odd'
+                    arguments:
+                      BinaryExpr @15:17 operator=-
+                        left:
+                          Identifier @15:15 name=n
+                        right:
+                          IntegerLiteral @15:19 value=1
+                    receiver=None
+        Return @17:1
+          value:
+            Identifier @17:11 name=result
+  Function @19:1
+    name='odd'
+    parameters:
+      Parameter @19:11
+        name='n'
+        type_name='i32'
+    result_type='flag'
+    body:
+      Block @20:1
+        Declaration @21:1 name=result type=flag mutable=true
+          value:
+            BooleanLiteral @21:22 value=false
+        If @22:1 has_else=false
+          condition:
+            BinaryExpr @22:8 operator=!=
+              left:
+                Identifier @22:6 name=n
+              right:
+                IntegerLiteral @22:11 value=0
+          then:
+            Block @23:1
+              Assignment @24:1 name=result
+                value:
+                  Call @24:11
+                    member_call=false
+                    name='even'
+                    arguments:
+                      BinaryExpr @24:18 operator=-
+                        left:
+                          Identifier @24:16 name=n
+                        right:
+                          IntegerLiteral @24:20 value=1
+                    receiver=None
+        Return @26:1
+          value:
+            Identifier @26:11 name=result
+  Function @28:1
+    name='passed'
+    parameters:
+      Parameter @28:14
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @29:1
+        Return @30:1
+          value:
+            Identifier @30:11 name=x
+  Function @32:1
+    name='twice_called'
+    parameters:
+      Parameter @32:20
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @33:1
+        Return @34:1
+          value:
+            BinaryExpr @34:13 operator=+
+              left:
+                Identifier @34:11 name=x
+              right:
+                IntegerLiteral @34:15 value=1
+  statements:
+    Declaration @36:1 name=value type=(i32)->i32 mutable=false
+      value:
+        Identifier @36:27 name=passed
+    Engrave @37:1
+      value:
+        Call @37:9
+          member_call=false
+          name='factorial'
+          arguments:
+            IntegerLiteral @37:19 value=5
+          receiver=None
+    Engrave @38:1
+      value:
+        Call @38:9
+          member_call=false
+          name='even'
+          arguments:
+            IntegerLiteral @38:14 value=4
+          receiver=None
+    Engrave @39:1
+      value:
+        Call @39:9
+          member_call=false
+          name='value'
+          arguments:
+            Call @39:15
+              member_call=false
+              name='passed'
+              arguments:
+                IntegerLiteral @39:22 value=1
+              receiver=None
+          receiver=None
+    Engrave @40:1
+      value:
+        BinaryExpr @40:25 operator=+
+          left:
+            Call @40:9
+              member_call=false
+              name='twice_called'
+              arguments:
+                IntegerLiteral @40:22 value=1
+              receiver=None
+          right:
+            Call @40:27
+              member_call=false
+              name='twice_called'
+              arguments:
+                IntegerLiteral @40:40 value=2
+              receiver=None
+  result:
+    IntegerLiteral @41:11 value=0

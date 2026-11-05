@@ -1,0 +1,151 @@
+Program @35:1
+  Card @1:1
+    name='Box'
+    fields:
+      Field @3:1
+        name='value'
+        type_name='i32'
+        mutable=False
+    members:
+      Function @8:1
+        name='use'
+        parameters:
+        result_type='i32'
+        body:
+          Block @9:1
+            Return @10:1
+              value:
+                InlinedCall @10:11
+                  function='wrapped'
+                  result_type='i32'
+                  statements:
+                    Declaration @21:15 name=wrapped.2.x type=i32 mutable=false
+                      value:
+                        Identifier @10:19 name=value
+                    Declaration @23:1 name=wrapped.2.sum type=i32 mutable=false
+                      value:
+                        BinaryExpr @23:26 operator=+
+                          left:
+                            Call @23:16
+                              member_call=false
+                              name='helper'
+                              arguments:
+                                Identifier @23:23 name=wrapped.2.x
+                              receiver=None
+                          right:
+                            Call @23:28
+                              member_call=false
+                              name='helper'
+                              arguments:
+                                Identifier @23:35 name=wrapped.2.x
+                              receiver=None
+                  result:
+                    Identifier @24:11 name=wrapped.2.sum
+  Function @13:1
+    name='helper'
+    parameters:
+      Parameter @13:14
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @14:1
+        Return @15:1
+          value:
+            BinaryExpr @15:13 operator=+
+              left:
+                Identifier @15:11 name=x
+              right:
+                IntegerLiteral @15:15 value=1
+  statements:
+    Declaration @35:1 name=b type=Box mutable=false
+      value:
+        ObjectInitializer @35:14
+          values:
+            IntegerLiteral @35:15 value=2
+    Engrave @36:1
+      value:
+        Call @36:11
+          member_call=true
+          name='use'
+          arguments:
+          receiver:
+            Identifier @36:9 name=b
+    If @37:1 has_else=false
+      condition:
+        InlinedCall @37:6
+          function='condition'
+          result_type='flag'
+          statements:
+            Declaration @26:17 name=condition.3.x type=i32 mutable=false
+              value:
+                IntegerLiteral @37:16 value=3
+            Engrave @28:1
+              value:
+                Identifier @28:9 name=condition.3.x
+          result:
+            BinaryExpr @29:13 operator===
+              left:
+                Identifier @29:11 name=condition.3.x
+              right:
+                IntegerLiteral @29:16 value=3
+      then:
+        Block @38:1
+          Engrave @39:1
+            value:
+              IntegerLiteral @39:9 value=1
+    Declaration @41:1 name=f type=(i32)->i32 mutable=false
+      value:
+        Lambda @41:23
+          parameters:
+            Parameter @41:42
+              name='x'
+              type_name='i32'
+          result_type='i32'
+          body:
+            Block @41:56
+              Return @41:56
+                value:
+                  InlinedCall @41:59
+                    function='inside'
+                    result_type='i32'
+                    statements:
+                      Declaration @31:14 name=inside.4.x type=i32 mutable=false
+                        value:
+                          Identifier @41:66 name=x
+                    result:
+                      BinaryExpr @33:22 operator=*
+                        left:
+                          InlinedCall @33:11
+                            function='helper2'
+                            result_type='i32'
+                            statements:
+                              Declaration @17:15 name=inside.4.helper2.1.x type=i32 mutable=false
+                                value:
+                                  Identifier @33:19 name=inside.4.x
+                            result:
+                              BinaryExpr @19:13 operator=+
+                                left:
+                                  Identifier @19:11 name=inside.4.helper2.1.x
+                                right:
+                                  IntegerLiteral @19:15 value=2
+                        right:
+                          IntegerLiteral @33:24 value=2
+    Engrave @42:1
+      value:
+        Call @42:9
+          member_call=false
+          name='f'
+          arguments:
+            IntegerLiteral @42:11 value=1
+          receiver=None
+    Engrave @43:1
+      value:
+        Call @43:9
+          member_call=false
+          name='f'
+          arguments:
+            IntegerLiteral @43:11 value=2
+          receiver=None
+  result:
+    IntegerLiteral @44:11 value=0

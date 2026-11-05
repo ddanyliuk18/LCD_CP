@@ -1,0 +1,42 @@
+Program @25:1
+  Card @1:1
+    name='Box'
+    fields:
+      Field @3:1
+        name='value'
+        type_name='i32'
+        mutable=False
+    members:
+      Function @8:1
+        name='get'
+        parameters:
+        result_type='i32'
+        body:
+          Block @9:1
+            Return @10:1
+              value:
+                Identifier @10:11 name=value
+  statements:
+    Declaration @25:1 name=b type=Box mutable=false
+      value:
+        ObjectInitializer @25:14
+          values:
+            IntegerLiteral @25:15 value=4
+    Engrave @26:1
+      value:
+        Call @26:11
+          member_call=true
+          name='get'
+          arguments:
+          receiver:
+            Identifier @26:9 name=b
+    Engrave @27:1
+      value:
+        Call @27:11
+          member_call=true
+          name='get'
+          arguments:
+          receiver:
+            Identifier @27:9 name=b
+  result:
+    IntegerLiteral @28:11 value=0

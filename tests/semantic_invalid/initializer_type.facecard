@@ -1,0 +1,6 @@
+card P
+{
+change x:string
+}
+keep p:P = {1}
+(⊙_⊙;)0

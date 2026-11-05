@@ -1,0 +1,28 @@
+card Box
+{
+keep value:i32
+serve dead() -> i32
+{
+retrocede value
+}
+serve get() -> i32
+{
+retrocede value
+}
+}
+serve ping(x:i32) -> i32
+{
+retrocede pong(x)
+}
+serve pong(x:i32) -> i32
+{
+retrocede ping(x)
+}
+serve self_loop(x:i32) -> i32
+{
+retrocede self_loop(x)
+}
+keep b:Box = {4}
+Engrave(b.get())
+Engrave(b.get())
+(⊙_⊙;)0

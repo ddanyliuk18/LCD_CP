@@ -1,0 +1,39 @@
+Program @9:1
+  Function @1:1
+    name='used_as_value'
+    parameters:
+      Parameter @1:21
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @2:1
+        Return @3:1
+          value:
+            BinaryExpr @3:13 operator=+
+              left:
+                Identifier @3:11 name=x
+              right:
+                IntegerLiteral @3:15 value=1
+  statements:
+    Declaration @10:1 name=f type=(i32)->i32 mutable=false
+      value:
+        Identifier @10:23 name=used_as_value
+    Engrave @11:1
+      value:
+        Call @11:9
+          member_call=false
+          name='f'
+          arguments:
+            IntegerLiteral @11:11 value=1
+          receiver=None
+    Engrave @12:1
+      value:
+        Call @12:9
+          member_call=false
+          name='f'
+          arguments:
+            IntegerLiteral @12:11 value=2
+          receiver=None
+  result:
+    IntegerLiteral @13:11 value=0

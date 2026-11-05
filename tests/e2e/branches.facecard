@@ -1,0 +1,12 @@
+change x:i32 = 1
+when (╥﹏╥)
+{
+x <- 2
+}
+otherwise
+{
+keep x:i32 = 9
+Engrave(x)
+}
+Engrave(x)
+(⊙_⊙;)0

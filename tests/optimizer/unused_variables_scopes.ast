@@ -1,0 +1,22 @@
+Program @1:1
+  statements:
+    Declaration @1:1 name=x type=i32 mutable=false
+      value:
+        IntegerLiteral @1:14 value=1
+    If @3:1 has_else=false
+      condition:
+        BinaryExpr @3:8 operator===
+          left:
+            Identifier @3:6 name=x
+          right:
+            IntegerLiteral @3:11 value=1
+      then:
+        Block @4:1
+          Declaration @5:1 name=y type=i32 mutable=false
+            value:
+              IntegerLiteral @5:14 value=3
+          Engrave @7:1
+            value:
+              Identifier @7:9 name=y
+  result:
+    IntegerLiteral @13:11 value=0

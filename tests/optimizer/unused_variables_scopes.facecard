@@ -1,0 +1,13 @@
+keep x:i32 = 1
+keep y:i32 = 2
+when x == 1
+{
+keep y:i32 = 3
+keep z:i32 = 4
+Engrave(y)
+}
+when y == 2
+{
+keep x:i32 = 9
+}
+(⊙_⊙;)0
