@@ -80,7 +80,12 @@ type ::= "i32"
        | "i64"
        | "flag"
        | "string"
-       | identifier ;
+       | identifier
+       | function_type ;
+
+
+function_type ::= "(" [ type { "," type } ] ")"
+                  "->" type ;
 
 
 initializer ::= expression
@@ -146,7 +151,23 @@ primary ::= number
           | boolean_literal
           | string_literal
           | draw_call
+          | lambda_expression
           | postfix_expression ;
+
+
+lambda_expression ::= "(づ◕‿◕)づ"
+                      "(" [ parameter_list ] ")"
+                      "->" type
+                      ( "=>" expression
+                      | NL lambda_block { call_suffix } ) ;
+
+
+lambda_block ::= "{" NL
+                 { NL }
+                 { function_item | NL }
+                 retrocede_statement NL
+                 { NL }
+                 "}" ;
 
 
 draw_call ::= "draw" "(" ")" ;
@@ -155,10 +176,15 @@ draw_call ::= "draw" "(" ")" ;
 postfix_expression ::= identifier
                        [
                            "(" [ argument_list ] ")"
+                           { call_suffix }
                          | "." identifier
                            { "." identifier }
-                           [ "(" [ argument_list ] ")" ]
+                           [ "(" [ argument_list ] ")"
+                             { call_suffix } ]
                        ] ;
+
+
+call_suffix ::= "(" [ argument_list ] ")" ;
 
 
 argument_list ::= expression

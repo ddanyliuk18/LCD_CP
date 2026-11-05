@@ -16,6 +16,8 @@ class TokenKind(Enum):
     COMMA = auto()
     DOT = auto()
     ARROW = auto()
+    FAT_ARROW = auto()
+    LAMBDA = auto()
     KEEP = auto()
     CHANGE = auto()
     I32 = auto()
@@ -77,6 +79,8 @@ KEYWORDS = {
 
 SPECIALS = (
     (b"->", TokenKind.ARROW),
+    (b"=>", TokenKind.FAT_ARROW),
+    ("(づ◕‿◕)づ".encode("utf-8"), TokenKind.LAMBDA),
     ("(✿◠‿◠)".encode("utf-8"), TokenKind.TRUE),
     ("(╥﹏╥)".encode("utf-8"), TokenKind.FALSE),
     ("(⊙_⊙;)".encode("utf-8"), TokenKind.FINISH),

@@ -2,6 +2,19 @@ from dataclasses import dataclass, field, fields
 from typing import List, Optional, Union
 
 
+class FunctionType(str):
+    """A function type: compares as its canonical text, keeps its structure."""
+
+    def __new__(cls, parameters, result):
+        text = '(' + ','.join(parameters) + ')->' + result
+        self = super().__new__(cls, text)
+        self.parameters, self.result = list(parameters), result
+        return self
+
+    def __getnewargs__(self):
+        return self.parameters, self.result
+
+
 @dataclass
 class ASTNode:
     line: int
@@ -130,6 +143,35 @@ class FunctionNode(ASTNode):
     parameters: list
     result_type: str
     body: BlockNode
+
+
+@dataclass
+class LambdaNode(ExprNode):
+    parameters: list
+    result_type: str
+    body: BlockNode
+
+
+@dataclass
+class ApplyNode(ExprNode):
+    """A call of a computed function value: make(1)(2)."""
+    callee: ExprNode
+    arguments: list
+
+
+@dataclass
+class InlinedCallNode(ExprNode):
+    """Optimizer only: a body standing where its call stood."""
+    function: str
+    result_type: str
+    statements: list
+    result: ExprNode
+
+
+@dataclass
+class ExpressionStatementNode(StmtNode):
+    """Optimizer only: a value nobody reads whose evaluation must still happen."""
+    value: ExprNode
 
 
 @dataclass

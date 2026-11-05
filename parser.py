@@ -17,7 +17,7 @@ from ast_nodes import (
 from lexer import Token, TokenKind
 from ast_nodes import (CardNode, FieldNode, ParameterNode, FunctionNode, ReturnNode,
                        EngraveNode, StringLiteralNode, FieldAccessNode, CallNode,
-                       ObjectInitializerNode)
+                       ObjectInitializerNode, LambdaNode, ApplyNode, FunctionType)
 
 
 class ParseError(Exception):
@@ -41,6 +41,8 @@ TOKEN_NAMES = {
     TokenKind.COMMA: "','",
     TokenKind.DOT: "'.'",
     TokenKind.ARROW: "'->'",
+    TokenKind.FAT_ARROW: "'=>'",
+    TokenKind.LAMBDA: "'(づ◕‿◕)づ'",
     TokenKind.KEEP: "'keep'",
     TokenKind.CHANGE: "'change'",
     TokenKind.I32: "'i32'",
@@ -170,7 +172,7 @@ class Parser:
         self.eat(TokenKind.NL)
         return FunctionNode(start.line, start.column, name, parameters, result, self.parse_function_block())
 
-    def parse_function_block(self):
+    def parse_function_block(self, closing_newline=True):
         start = self.eat(TokenKind.LBRACE)
         self.eat(TokenKind.NL)
         self.skip_newlines()
@@ -182,7 +184,8 @@ class Parser:
         self.eat(TokenKind.NL)
         self.skip_newlines()
         self.eat(TokenKind.RBRACE)
-        self.eat(TokenKind.NL)
+        if closing_newline:
+            self.eat(TokenKind.NL)
         return BlockNode(start.line, start.column, statements)
 
     def parse_retrocede_statement(self):
@@ -246,7 +249,21 @@ class Parser:
             return self.eat(TokenKind.I64).text
         if token.kind is TokenKind.FLAG:
             return self.eat(TokenKind.FLAG).text
+        if token.kind is TokenKind.LPAREN:
+            return self.parse_function_type()
         raise ParseError(token, "expected type 'i32', 'i64', or 'flag'")
+
+    def parse_function_type(self) -> FunctionType:
+        self.eat(TokenKind.LPAREN)
+        parameters = []
+        if self.peek().kind is not TokenKind.RPAREN:
+            parameters.append(self.parse_type())
+            while self.peek().kind is TokenKind.COMMA:
+                self.eat(TokenKind.COMMA)
+                parameters.append(self.parse_type())
+        self.eat(TokenKind.RPAREN)
+        self.eat(TokenKind.ARROW)
+        return FunctionType(parameters, self.parse_type())
 
     def parse_assignment(self) -> AssignmentNode:
         name = self.parse_lvalue()
@@ -288,8 +305,32 @@ class Parser:
             arguments = [] if self.peek().kind is TokenKind.RPAREN else self.parse_argument_list()
             self.eat(TokenKind.RPAREN)
             receiver = value.base if isinstance(value, FieldAccessNode) else None
-            value = CallNode(value.line, value.column, value.name, arguments, receiver)
+            value = self.parse_call_suffix(CallNode(value.line, value.column, value.name, arguments, receiver))
         return value
+
+    def parse_call_suffix(self, value):
+        while self.peek().kind is TokenKind.LPAREN:
+            start = self.eat(TokenKind.LPAREN)
+            arguments = [] if self.peek().kind is TokenKind.RPAREN else self.parse_argument_list()
+            self.eat(TokenKind.RPAREN)
+            value = ApplyNode(start.line, start.column, value, arguments)
+        return value
+
+    def parse_lambda(self):
+        start = self.eat(TokenKind.LAMBDA)
+        self.eat(TokenKind.LPAREN)
+        parameters = [] if self.peek().kind is TokenKind.RPAREN else self.parse_parameter_list()
+        self.eat(TokenKind.RPAREN)
+        self.eat(TokenKind.ARROW)
+        result = self.parse_type()
+        if self.peek().kind is TokenKind.FAT_ARROW:
+            arrow = self.eat(TokenKind.FAT_ARROW)
+            value = self.parse_expression()
+            body = BlockNode(arrow.line, arrow.column, [ReturnNode(arrow.line, arrow.column, value)])
+            return LambdaNode(start.line, start.column, parameters, result, body)
+        self.eat(TokenKind.NL)
+        body = self.parse_function_block(closing_newline=False)
+        return self.parse_call_suffix(LambdaNode(start.line, start.column, parameters, result, body))
 
     def parse_draw_call(self):
         start = self.eat(TokenKind.DRAW)
@@ -376,6 +417,8 @@ class Parser:
             return self.parse_string_literal()
         if kind is TokenKind.DRAW:
             return self.parse_draw_call()
+        if kind is TokenKind.LAMBDA:
+            return self.parse_lambda()
         if kind is TokenKind.INTEGER:
             return self.parse_integer_literal()
         if kind is TokenKind.TRUE or kind is TokenKind.FALSE:
