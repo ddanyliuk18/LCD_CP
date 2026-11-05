@@ -1,0 +1,19 @@
+card Pair
+{
+keep left:i32
+keep right:i32
+}
+serve loud(x:i32) -> i32
+{
+Engrave(x)
+retrocede x
+}
+keep a:i32 = loud(1)
+change b:i32 = 0
+b <- loud(2)
+keep c:i32 = draw()
+keep d:i32 = c + 2147483647
+keep pair:Pair = {loud(4), 5}
+keep quiet:() -> i32 = (づ◕‿◕)づ () -> i32 => loud(9)
+Engrave(3)
+(⊙_⊙;)0

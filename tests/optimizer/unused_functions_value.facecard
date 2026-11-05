@@ -1,0 +1,13 @@
+serve used_as_value(x:i32) -> i32
+{
+retrocede x + 1
+}
+serve only_in_dead_lambda(x:i32) -> i32
+{
+retrocede x + 2
+}
+keep dead:(i32) -> i32 = (づ◕‿◕)づ (x:i32) -> i32 => only_in_dead_lambda(x)
+keep f:(i32) -> i32 = used_as_value
+Engrave(f(1))
+Engrave(f(2))
+(⊙_⊙;)0

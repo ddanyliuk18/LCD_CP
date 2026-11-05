@@ -1,0 +1,41 @@
+serve factorial(n:i32) -> i32
+{
+change result:i32 = 1
+when n != 0
+{
+result <- n * factorial(n - 1)
+}
+retrocede result
+}
+serve even(n:i32) -> flag
+{
+change result:flag = (✿◠‿◠)
+when n != 0
+{
+result <- odd(n - 1)
+}
+retrocede result
+}
+serve odd(n:i32) -> flag
+{
+change result:flag = (╥﹏╥)
+when n != 0
+{
+result <- even(n - 1)
+}
+retrocede result
+}
+serve passed(x:i32) -> i32
+{
+retrocede x
+}
+serve twice_called(x:i32) -> i32
+{
+retrocede x + 1
+}
+keep value:(i32) -> i32 = passed
+Engrave(factorial(5))
+Engrave(even(4))
+Engrave(value(passed(1)))
+Engrave(twice_called(1) + twice_called(2))
+(⊙_⊙;)0

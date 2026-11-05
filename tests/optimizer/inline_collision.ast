@@ -1,0 +1,70 @@
+Program @16:1
+  statements:
+    Declaration @16:1 name=x type=i32 mutable=false
+      value:
+        IntegerLiteral @16:14 value=1
+    Declaration @17:1 name=y type=i32 mutable=false
+      value:
+        IntegerLiteral @17:14 value=50
+    Engrave @18:1
+      value:
+        BinaryExpr @18:18 operator=+
+          left:
+            InlinedCall @18:9
+              function='outer'
+              result_type='i32'
+              statements:
+                Declaration @11:13 name=outer.2.x type=i32 mutable=false
+                  value:
+                    Identifier @18:15 name=x
+                Declaration @13:1 name=outer.2.y type=i32 mutable=false
+                  value:
+                    BinaryExpr @13:16 operator=+
+                      left:
+                        Identifier @13:14 name=outer.2.x
+                      right:
+                        IntegerLiteral @13:18 value=1
+              result:
+                BinaryExpr @14:24 operator=+
+                  left:
+                    InlinedCall @14:11
+                      function='inner'
+                      result_type='i32'
+                      statements:
+                        Declaration @1:13 name=outer.2.inner.1.x type=i32 mutable=false
+                          value:
+                            BinaryExpr @14:19 operator=-
+                              left:
+                                Identifier @14:17 name=outer.2.y
+                              right:
+                                IntegerLiteral @14:21 value=1
+                        Declaration @3:1 name=outer.2.inner.1.y type=i32 mutable=true
+                          value:
+                            Identifier @3:16 name=outer.2.inner.1.x
+                        If @4:1 has_else=false
+                          condition:
+                            BinaryExpr @4:8 operator===
+                              left:
+                                Identifier @4:6 name=outer.2.inner.1.y
+                              right:
+                                IntegerLiteral @4:11 value=1
+                          then:
+                            Block @5:1
+                              Declaration @6:1 name=outer.2.inner.1.x type=i32 mutable=false
+                                value:
+                                  IntegerLiteral @6:14 value=100
+                              Assignment @7:1 name=outer.2.inner.1.y
+                                value:
+                                  BinaryExpr @7:8 operator=+
+                                    left:
+                                      Identifier @7:6 name=outer.2.inner.1.x
+                                    right:
+                                      Identifier @7:10 name=outer.2.inner.1.y
+                      result:
+                        Identifier @9:11 name=outer.2.inner.1.y
+                  right:
+                    Identifier @14:26 name=outer.2.y
+          right:
+            Identifier @18:20 name=y
+  result:
+    IntegerLiteral @19:11 value=0

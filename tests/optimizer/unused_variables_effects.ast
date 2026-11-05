@@ -1,0 +1,72 @@
+Program @11:1
+  Card @1:1
+    name='Pair'
+    fields:
+      Field @3:1
+        name='left'
+        type_name='i32'
+        mutable=False
+      Field @4:1
+        name='right'
+        type_name='i32'
+        mutable=False
+    members:
+  Function @6:1
+    name='loud'
+    parameters:
+      Parameter @6:12
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @7:1
+        Engrave @8:1
+          value:
+            Identifier @8:9 name=x
+        Return @9:1
+          value:
+            Identifier @9:11 name=x
+  statements:
+    ExpressionStatement @11:14
+      value:
+        Call @11:14
+          member_call=false
+          name='loud'
+          arguments:
+            IntegerLiteral @11:19 value=1
+          receiver=None
+    ExpressionStatement @13:6
+      value:
+        Call @13:6
+          member_call=false
+          name='loud'
+          arguments:
+            IntegerLiteral @13:11 value=2
+          receiver=None
+    Declaration @14:1 name=c type=i32 mutable=false
+      value:
+        Call @14:14
+          member_call=false
+          name='draw'
+          arguments:
+          receiver=None
+    ExpressionStatement @15:16
+      value:
+        BinaryExpr @15:16 operator=+
+          left:
+            Identifier @15:14 name=c
+          right:
+            IntegerLiteral @15:18 value=2147483647
+    ExpressionStatement @16:19
+      value:
+        Call @16:19
+          member_call=false
+          name='loud'
+          arguments:
+            IntegerLiteral @16:24 value=4
+          receiver=None
+    Engrave @18:1
+      value:
+        IntegerLiteral @18:9 value=3
+  result:
+    IntegerLiteral @19:11 value=0

@@ -1,0 +1,64 @@
+Program @22:1
+  Function @13:1
+    name='used'
+    parameters:
+      Parameter @13:12
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @14:1
+        Engrave @15:1
+          value:
+            Identifier @15:9 name=x
+        Return @16:1
+          value:
+            Identifier @16:11 name=x
+  Function @18:1
+    name='twice'
+    parameters:
+      Parameter @18:13
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @19:1
+        Return @20:1
+          value:
+            BinaryExpr @20:19 operator=+
+              left:
+                Call @20:11
+                  member_call=false
+                  name='used'
+                  arguments:
+                    Identifier @20:16 name=x
+                  receiver=None
+              right:
+                Call @20:21
+                  member_call=false
+                  name='used'
+                  arguments:
+                    Identifier @20:26 name=x
+                  receiver=None
+  statements:
+    Declaration @22:1 name=n type=i32 mutable=false
+      value:
+        Call @22:14
+          member_call=false
+          name='twice'
+          arguments:
+            IntegerLiteral @22:20 value=1
+          receiver=None
+    Engrave @23:1
+      value:
+        Identifier @23:9 name=n
+    Engrave @24:1
+      value:
+        Call @24:9
+          member_call=false
+          name='twice'
+          arguments:
+            IntegerLiteral @24:15 value=2
+          receiver=None
+  result:
+    IntegerLiteral @25:11 value=0

@@ -1,0 +1,83 @@
+Program @21:1
+  Function @16:1
+    name='show'
+    parameters:
+      Parameter @16:12
+        name='x'
+        type_name='i32'
+    result_type='i32'
+    body:
+      Block @17:1
+        Engrave @18:1
+          value:
+            Identifier @18:9 name=x
+        Return @19:1
+          value:
+            Identifier @19:11 name=x
+  statements:
+    Engrave @21:1
+      value:
+        BinaryExpr @21:44 operator=-
+          left:
+            BinaryExpr @21:18 operator=+
+              left:
+                InlinedCall @21:9
+                  function='first'
+                  result_type='i32'
+                  statements:
+                    Declaration @1:13 name=first.1.x type=i32 mutable=false
+                      value:
+                        IntegerLiteral @21:15 value=1
+                    Engrave @3:1
+                      value:
+                        StringLiteral @3:9
+                          value='first'
+                  result:
+                    Identifier @4:11 name=first.1.x
+              right:
+                InlinedCall @21:20
+                  function='third'
+                  result_type='i32'
+                  statements:
+                    Declaration @11:13 name=third.3.x type=i32 mutable=false
+                      value:
+                        Call @21:26
+                          member_call=false
+                          name='show'
+                          arguments:
+                            IntegerLiteral @21:31 value=2
+                          receiver=None
+                    Declaration @11:20 name=third.3.y type=i32 mutable=false
+                      value:
+                        Call @21:35
+                          member_call=false
+                          name='show'
+                          arguments:
+                            IntegerLiteral @21:40 value=3
+                          receiver=None
+                    Engrave @13:1
+                      value:
+                        StringLiteral @13:9
+                          value='third'
+                  result:
+                    BinaryExpr @14:13 operator=*
+                      left:
+                        Identifier @14:11 name=third.3.x
+                      right:
+                        Identifier @14:15 name=third.3.y
+          right:
+            InlinedCall @21:46
+              function='second'
+              result_type='i32'
+              statements:
+                Declaration @6:14 name=second.2.x type=i32 mutable=false
+                  value:
+                    IntegerLiteral @21:53 value=4
+                Engrave @8:1
+                  value:
+                    StringLiteral @8:9
+                      value='second'
+              result:
+                Identifier @9:11 name=second.2.x
+  result:
+    IntegerLiteral @22:11 value=0

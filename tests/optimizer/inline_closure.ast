@@ -1,0 +1,65 @@
+Program @14:1
+  statements:
+    Declaration @14:1 name=n type=i32 mutable=false
+      value:
+        IntegerLiteral @14:14 value=100
+    Declaration @15:1 name=f type=(i32)->i32 mutable=false
+      value:
+        InlinedCall @15:23
+          function='adder'
+          result_type='(i32)->i32'
+          statements:
+            Declaration @1:13 name=adder.1.n type=i32 mutable=false
+              value:
+                Identifier @15:29 name=n
+            Declaration @3:1 name=adder.1.kept type=i32 mutable=false
+              value:
+                BinaryExpr @3:19 operator=+
+                  left:
+                    Identifier @3:17 name=adder.1.n
+                  right:
+                    IntegerLiteral @3:21 value=1
+          result:
+            Lambda @4:11
+              parameters:
+                Parameter @4:30
+                  name='adder.1.x'
+                  type_name='i32'
+              result_type='i32'
+              body:
+                Block @5:1
+                  Declaration @6:1 name=adder.1.n type=i32 mutable=false
+                    value:
+                      BinaryExpr @6:16 operator=+
+                        left:
+                          Identifier @6:14 name=adder.1.x
+                        right:
+                          Identifier @6:18 name=adder.1.kept
+                  Return @7:1
+                    value:
+                      Identifier @7:11 name=adder.1.n
+    Engrave @16:1
+      value:
+        Call @16:9
+          member_call=false
+          name='f'
+          arguments:
+            IntegerLiteral @16:11 value=1
+          receiver=None
+    Declaration @17:1 name=big type=i64 mutable=false
+      value:
+        BinaryExpr @17:26 operator=+
+          left:
+            InlinedCall @17:16
+              function='widened'
+              result_type='i64'
+              statements:
+              result:
+                IntegerLiteral @12:11 value=7
+          right:
+            IntegerLiteral @17:28 value=9000000000
+    Engrave @18:1
+      value:
+        Identifier @18:9 name=big
+  result:
+    IntegerLiteral @19:11 value=0

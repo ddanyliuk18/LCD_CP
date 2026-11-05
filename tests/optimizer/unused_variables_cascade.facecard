@@ -1,0 +1,10 @@
+keep a:i32 = 1
+keep b:i32 = a + 1
+keep c:i32 = b * 2
+change d:i32 = 5
+d <- 6
+change counted:i32 = 0
+counted <- counted
+keep live:i32 = 7
+Engrave(live)
+(⊙_⊙;)0

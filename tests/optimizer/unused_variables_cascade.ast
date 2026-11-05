@@ -1,0 +1,10 @@
+Program @1:1
+  statements:
+    Declaration @8:1 name=live type=i32 mutable=false
+      value:
+        IntegerLiteral @8:17 value=7
+    Engrave @9:1
+      value:
+        Identifier @9:9 name=live
+  result:
+    IntegerLiteral @10:11 value=0

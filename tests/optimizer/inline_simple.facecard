@@ -1,0 +1,9 @@
+serve add(a:i32, b:i32) -> i32
+{
+keep sum:i32 = a + b
+retrocede sum * 2
+}
+keep sum:i32 = draw()
+keep a:i32 = 10
+Engrave(add(a, sum) + 1)
+(⊙_⊙;)0

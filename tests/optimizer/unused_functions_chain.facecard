@@ -1,0 +1,25 @@
+serve c(x:i32) -> i32
+{
+retrocede x
+}
+serve b(x:i32) -> i32
+{
+retrocede c(x)
+}
+serve a(x:i32) -> i32
+{
+retrocede b(x)
+}
+serve used(x:i32) -> i32
+{
+Engrave(x)
+retrocede x
+}
+serve twice(x:i32) -> i32
+{
+retrocede used(x) + used(x)
+}
+keep n:i32 = twice(1)
+Engrave(n)
+Engrave(twice(2))
+(⊙_⊙;)0

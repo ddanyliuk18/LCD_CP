@@ -1,0 +1,22 @@
+serve first(x:i32) -> i32
+{
+Engrave("first")
+retrocede x
+}
+serve second(x:i32) -> i32
+{
+Engrave("second")
+retrocede x
+}
+serve third(x:i32, y:i32) -> i32
+{
+Engrave("third")
+retrocede x * y
+}
+serve show(x:i32) -> i32
+{
+Engrave(x)
+retrocede x
+}
+Engrave(first(1) + third(show(2), show(3)) - second(4))
+(⊙_⊙;)0
