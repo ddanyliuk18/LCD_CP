@@ -43,9 +43,14 @@ class Analyzer:
         self.scopes = []
         self.current = None
         self.member_calls = []
+        self.lambdas = []
+        self.results = []
 
     def valid_type(self, name, node):
-        if name not in ('i32', 'i64', 'flag', 'string') and name not in self.cards:
+        if isinstance(name, FunctionType):
+            for part in name.parameters + [name.result]:
+                self.valid_type(part, node)
+        elif name not in ('i32', 'i64', 'flag', 'string') and name not in self.cards:
             fail(node, f"unknown type '{name}'")
 
     def analyze(self, tree):
@@ -77,6 +82,7 @@ class Analyzer:
         serves += [s for c in self.cards.values() for s in c.members.values()]
         for serve in serves:
             self.current = serve
+            self.results = [serve.node.result_type]
             self.scopes = [{}]
             for parameter in serve.node.parameters:
                 parameter.symbol = self.declare(parameter, parameter.type_name, False)
@@ -112,13 +118,21 @@ class Analyzer:
         self.scopes[-1][node.name] = variable
         return variable
 
-    def lookup(self, node):
-        for scope in reversed(self.scopes):
-            if node.name in scope:
-                return scope[node.name]
-        if self.current and self.current.owner and node.name in self.current.owner.fields:
-            return self.current.owner.fields[node.name]
-        fail(node, f"undeclared name '{node.name}'")
+    def find(self, name):
+        """Return the variable and the index of its scope (-1 for a field)."""
+        for depth in range(len(self.scopes) - 1, -1, -1):
+            if name in self.scopes[depth]:
+                return self.scopes[depth][name], depth
+        if self.current and self.current.owner and name in self.current.owner.fields:
+            return self.current.owner.fields[name], -1
+        return None, None
+
+    def capture(self, variable, depth):
+        """Record the variable in every lambda that lies between it and its use."""
+        crossed = [item for item in self.lambdas if item.first_scope > depth]
+        for item in crossed:
+            item.captures[variable] = True
+        return bool(crossed)
 
     def compatible(self, actual, expected, node):
         if actual != expected and (actual, expected) != ('i32', 'i64'):
@@ -141,6 +155,8 @@ class Analyzer:
             target = IdentifierNode(node.line, node.column, node.name) if isinstance(node.name, str) else node.name
             node.target = target
             expected = self.expression(target)
+            if target.captured:
+                fail(target, f"cannot assign captured variable '{self.root_name(target)}'")
             if not target.path_mutable:
                 fail(target, 'assignment through constant binding or field')
             if self.current and target.self_path:
@@ -154,11 +170,43 @@ class Analyzer:
         elif isinstance(node, EngraveNode):
             self.expression(node.value)
         elif isinstance(node, ReturnNode):
-            self.compatible(self.expression(node.value, self.current.node.result_type),
-                            self.current.node.result_type, node.value)
+            self.compatible(self.expression(node.value, self.results[-1]), self.results[-1], node.value)
+        elif isinstance(node, ExpressionStatementNode):
+            self.expression(node.value)
+
+    def root_name(self, node):
+        return self.root_name(node.base) if isinstance(node, FieldAccessNode) else node.name
+
+    def lambda_value(self, node):
+        """Check a lambda; its body sees outer variables as read-only copies."""
+        self.valid_type(node.result_type, node)
+        for parameter in node.parameters:
+            self.valid_type(parameter.type_name, parameter)
+        node.first_scope, node.captures = len(self.scopes), {}
+        self.lambdas.append(node)
+        self.results.append(node.result_type)
+        self.scopes.append({})
+        for parameter in node.parameters:
+            parameter.symbol = self.declare(parameter, parameter.type_name, False)
+        self.block(node.body, nested=False)
+        self.scopes.pop()
+        self.results.pop()
+        self.lambdas.pop()
+        return FunctionType([p.type_name for p in node.parameters], node.result_type)
+
+    def value_call(self, node, callee):
+        """Check the arguments of a call through a function value."""
+        signature = callee.type_name
+        if not isinstance(signature, FunctionType):
+            fail(node, f"value of type {signature} is not a function")
+        if len(node.arguments) != len(signature.parameters):
+            fail(node, f"expected {len(signature.parameters)} arguments, got {len(node.arguments)}")
+        for argument, parameter in zip(node.arguments, signature.parameters):
+            self.compatible(self.expression(argument, parameter), parameter, argument)
+        return signature.result
 
     def expression(self, node, expected=None):
-        node.path_mutable, node.self_path = False, False
+        node.path_mutable, node.self_path, node.captured = False, False, False
         node.constant = None
         if isinstance(node, IntegerLiteralNode):
             # Compare text first: Python's integer digit limit must not leak out.
@@ -174,10 +222,19 @@ class Analyzer:
         elif isinstance(node, StringLiteralNode):
             result = 'string'
         elif isinstance(node, IdentifierNode):
-            node.symbol = self.lookup(node)
-            result = node.symbol.type_name
-            node.path_mutable = node.symbol.mutable
-            node.self_path = node.symbol.owner is not None
+            variable, depth = (None, None) if getattr(node, 'global_only', False) else self.find(node.name)
+            if variable is None:
+                serve = self.functions.get(node.name)
+                if serve is None:
+                    fail(node, f"undeclared name '{node.name}'")
+                node.symbol = serve
+                result = FunctionType([p.type_name for p in serve.node.parameters], serve.node.result_type)
+            else:
+                node.symbol = variable
+                node.captured = self.capture(variable, depth)
+                result = variable.type_name
+                node.path_mutable = variable.mutable and not node.captured
+                node.self_path = variable.owner is not None and not node.captured
         elif isinstance(node, FieldAccessNode):
             base = self.expression(node.base)
             card = self.cards.get(base)
@@ -187,6 +244,19 @@ class Analyzer:
             result = node.symbol.type_name
             node.path_mutable = node.base.path_mutable and node.symbol.mutable
             node.self_path = node.base.self_path
+            node.captured = node.base.captured
+        elif isinstance(node, LambdaNode):
+            result = self.lambda_value(node)
+        elif isinstance(node, ApplyNode):
+            self.expression(node.callee)
+            result = self.value_call(node, node.callee)
+        elif isinstance(node, InlinedCallNode):
+            self.scopes.append({})
+            for statement in node.statements:
+                self.statement(statement)
+            self.compatible(self.expression(node.result, node.result_type), node.result_type, node.result)
+            self.scopes.pop()
+            result = node.result_type
         elif isinstance(node, ObjectInitializerNode):
             if expected not in self.cards:
                 fail(node, 'object initializer requires a card type')
@@ -198,6 +268,7 @@ class Analyzer:
                 self.compatible(self.expression(value, variable.type_name), variable.type_name, value)
             result = expected
         elif isinstance(node, CallNode):
+            node.symbol, node.callee = None, None
             if node.name == 'draw' and node.receiver is None:
                 result = 'i32'
                 node.type_name = result
@@ -208,13 +279,30 @@ class Analyzer:
                 card = self.cards.get(receiver_type)
                 serve = card.members.get(node.name) if card else None
                 receiver_mutable, self_path = node.receiver.path_mutable, node.receiver.self_path
+                field = card.fields.get(node.name) if card else None
+                if field and isinstance(field.type_name, FunctionType):
+                    node.callee = FieldAccessNode(node.line, node.column, node.receiver, node.name)
+            elif getattr(node, 'global_only', False):
+                serve = self.functions.get(node.name)
             else:
-                owner = self.current.owner if self.current else None
-                serve = owner.members.get(node.name) if owner else None
-                if serve:
-                    self_path = True
+                variable, _ = self.find(node.name)
+                if variable and isinstance(variable.type_name, FunctionType):
+                    serve = None
+                    node.callee = IdentifierNode(node.line, node.column, node.name)
                 else:
-                    serve = self.functions.get(node.name)
+                    owner = self.current.owner if self.current else None
+                    serve = owner.members.get(node.name) if owner else None
+                    if serve:
+                        if self.lambdas:
+                            fail(node, f"lambda cannot call member '{node.name}' on the enclosing object")
+                        self_path = True
+                    else:
+                        serve = self.functions.get(node.name)
+            if node.callee:
+                self.expression(node.callee)
+                result = self.value_call(node, node.callee)
+                node.type_name = result
+                return result
             if serve is None:
                 fail(node, f"unknown serve '{node.name}'")
             node.symbol = serve
