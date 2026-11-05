@@ -1,4 +1,4 @@
-"""Tree optimizer behind --optimize: unused variables.
+"""Tree optimizer behind --optimize: unused variables and unused functions.
 
 Every pass works on a checked tree and leaves a tree that the analyzer can check
 again, so symbols are always rebuilt from the program as it now stands.
@@ -6,7 +6,7 @@ again, so symbols are always rebuilt from the program as it now stands.
 from dataclasses import fields
 
 from ast_nodes import *
-from semantics import Analyzer, Variable
+from semantics import Analyzer, Serve, Variable
 
 ARITHMETIC = ('+', '-', '*')
 RANGES = {'i32': 1 << 31, 'i64': 1 << 63}
@@ -80,6 +80,8 @@ class Optimizer:
         while changed:
             self.check()
             changed = self.remove_unused_variables()
+            self.check()
+            changed = self.remove_unused_functions() or changed
         return self.check()
 
     def check(self):
@@ -181,6 +183,27 @@ class Optimizer:
     @staticmethod
     def is_empty(node):
         return not node.then_block.statements and not (node.else_block and node.else_block.statements)
+
+    # Unused functions ---------------------------------------------------
+
+    def used_serves(self, roots):
+        """Every serve reachable from the given nodes, by call or by value."""
+        used, pending = set(), list(roots)
+        while pending:
+            for node in walk(pending.pop()):
+                serve = getattr(node, 'symbol', None)
+                if isinstance(node, (CallNode, IdentifierNode)) and isinstance(serve, Serve) and serve not in used:
+                    used.add(serve)
+                    pending.append(serve.node)
+        return used
+
+    def remove_unused_functions(self):
+        used = self.used_serves(self.tree.statements + [self.tree.result])
+        before = len(self.tree.functions) + sum(len(card.members) for card in self.tree.cards)
+        self.tree.functions[:] = [node for node in self.tree.functions if node.symbol in used]
+        for card in self.tree.cards:
+            card.members[:] = [node for node in card.members if node.symbol in used]
+        return before != len(self.tree.functions) + sum(len(card.members) for card in self.tree.cards)
 
 
 def optimize(tree):
