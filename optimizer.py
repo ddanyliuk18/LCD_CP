@@ -1,4 +1,4 @@
-"""Tree optimizer behind --optimize: unused variables and unused functions.
+"""Tree optimizer behind --optimize: unused variables, unused functions, inlining.
 
 Every pass works on a checked tree and leaves a tree that the analyzer can check
 again, so symbols are always rebuilt from the program as it now stands.
@@ -82,6 +82,8 @@ class Optimizer:
             changed = self.remove_unused_variables()
             self.check()
             changed = self.remove_unused_functions() or changed
+            self.check()
+            changed = self.inline_one_call() or changed
         return self.check()
 
     def check(self):
@@ -204,6 +206,58 @@ class Optimizer:
         for card in self.tree.cards:
             card.members[:] = [node for node in card.members if node.symbol in used]
         return before != len(self.tree.functions) + sum(len(card.members) for card in self.tree.cards)
+
+    # Inlining -----------------------------------------------------------
+
+    def inline_one_call(self):
+        calls, values = {}, set()
+        for node in walk(self.tree):
+            serve = getattr(node, 'symbol', None)
+            if isinstance(serve, Serve):
+                if isinstance(node, CallNode):
+                    calls.setdefault(serve, []).append(node)
+                elif isinstance(node, IdentifierNode):
+                    values.add(serve)
+        for function in self.tree.functions:
+            serve = function.symbol
+            if len(calls.get(serve, ())) == 1 and serve not in values and not self.is_recursive(serve):
+                self.inline(function, calls[serve][0])
+                return True
+        return False
+
+    def is_recursive(self, serve):
+        return serve in self.used_serves([serve.node])
+
+    def inline(self, function, call):
+        self.inlined += 1
+        self.rename_locals(function)
+        statements = [DeclarationNode(p.line, p.column, p.name, p.type_name, False, argument)
+                      for p, argument in zip(function.parameters, call.arguments)]
+        statements += function.body.statements[:-1]
+        result = function.body.statements[-1].value
+        replacement = InlinedCallNode(call.line, call.column, function.name, function.result_type,
+                                      statements, result)
+        self.tree.functions[:] = [node for node in self.tree.functions if node is not function]
+        rewrite(self.tree, lambda node: replacement if node is call else node)
+
+    def rename_locals(self, function):
+        """Give the moved body names that source code cannot spell."""
+        names = {}
+        for node in walk(function):
+            if isinstance(node, (DeclarationNode, ParameterNode)):
+                names[node.symbol] = f'{function.name}.{self.inlined}.{node.name}'
+                node.name = names[node.symbol]
+        for node in walk(function):
+            symbol = getattr(node, 'symbol', None)
+            if isinstance(node, AssignmentNode) and isinstance(node.name, str):
+                node.name = names.get(node.target.symbol, node.name)
+            elif isinstance(node, IdentifierNode) and symbol in names:
+                node.name = names[symbol]
+            elif isinstance(node, CallNode) and node.callee is not None and node.receiver is None:
+                node.name = names.get(node.callee.symbol, node.name)
+            elif isinstance(node, (CallNode, IdentifierNode)) and isinstance(symbol, Serve):
+                # Names at the call site must not capture what the body meant.
+                node.global_only = symbol.owner is None
 
 
 def optimize(tree):
